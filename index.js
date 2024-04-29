@@ -14,7 +14,7 @@ const EXPRESS_SESSION_CONFIGS = {
 };
 
 const app = express();
-app.use(session());
+app.use(session(EXPRESS_SESSION_CONFIGS));
 app.use(cors({credentials: true}));
 
 app.use(bodyParser.urlencoded({ extended: true }));
