@@ -20,6 +20,10 @@ app.use(cors({credentials: true}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+app.get('/', (req, res) => {
+    res.send('Welcome to Diagonistic API');
+});
+
 app.use("/api/auth", authRouter);
 
 const port = process.env.PORT || 3000;
