@@ -1,0 +1,22 @@
+{
+  "CONSTANTS": {
+    "DATABASE_COLLECTIONS": {
+      "USERS": "user"
+
+    } ,
+    "STATUS" : {
+      "ACTIVE" : "ACTIVE" ,
+      "INACTIVE" : "INACTIVE" ,
+      "PENDING" : "PENDING"
+    } ,
+
+    "ROLES" : {
+      "USER" : "USER", 
+      "PATIENT" : "PATIENT" ,
+      "CENTER" : "CENTER"
+    }
+
+  },
+  "JWT_SECRET": "reierjuoreitn",
+  "JWT_ACCESS_TOKEN_EXPIRY": "720h"
+}

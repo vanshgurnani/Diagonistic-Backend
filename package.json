@@ -1,0 +1,32 @@
+{
+  "name": "diagonisitic_backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm install"
+  },
+  "author": "Rohan Gaikwad",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1602.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.18.0",
+    "geoip-lite": "^1.4.10",
+    "geolocation": "^0.2.0",
+    "jsonwebtoken": "^9.0.1",
+    "mongoose": "^7.6.2",
+    "multer": "^1.4.5-lts.1",
+    "node-geolocation": "^1.15.14",
+    "nodemailer": "^6.9.13",
+    "passport": "^0.7.0",
+    "passport-google-oauth": "^2.0.0",
+    "serverless-http": "^3.2.0",
+    "uuid": "^9.0.1"
+  }
+}
