@@ -15,17 +15,8 @@ const EXPRESS_SESSION_CONFIGS = {
 
 const app = express();
 app.use(session(EXPRESS_SESSION_CONFIGS));
-// app.use(cors({credentials: true}));
-
-const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://diagnostic-frontend.vercel.app'
-  ];
   
-  app.use(cors({
-    origin: allowedOrigins,
-  }));
+app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
