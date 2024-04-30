@@ -5,6 +5,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 
+const passport = require("./utils/google_stratergy");
+
 const authRouter = require("./routers/auth_router");
 
 const EXPRESS_SESSION_CONFIGS = {
@@ -15,7 +17,9 @@ const EXPRESS_SESSION_CONFIGS = {
 
 const app = express();
 app.use(session(EXPRESS_SESSION_CONFIGS));
-  
+
+app.use(passport.initialize());
+
 app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: true }));
