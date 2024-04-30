@@ -265,6 +265,12 @@ module.exports.googleHandler = async (req, res) => {
         user._id,
         user.username
       );
+      const script = `
+      <script>
+          localStorage.setItem('accessToken', '${accessToken}');
+          window.location.href = '${process.env.GOOGLE_UI_SUCCESS_REDIRECT_URL}';
+      </script>`;
+      res.send(script);
       res.cookie("accessToken", accessToken, { httpOnly: true });
       res.redirect(process.env.GOOGLE_UI_SUCCESS_REDIRECT_URL);
     }
