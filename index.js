@@ -9,6 +9,7 @@ const passport = require("./utils/google_stratergy");
 
 const authRouter = require("./routers/auth_router");
 const testRouter = require("./routers/test_router");
+const contactRouter = require("./routers/contact_router");
 
 const EXPRESS_SESSION_CONFIGS = {
     secret: process.env.EXPRESS_SESSION_SECRET_KEY,
@@ -32,6 +33,7 @@ app.get('/', (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/test", testRouter);
+app.use("/api/contact", contactRouter);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

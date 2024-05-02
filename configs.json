@@ -2,7 +2,8 @@
   "CONSTANTS": {
     "DATABASE_COLLECTIONS": {
       "USERS": "user",
-      "TEST" : "test"
+      "TEST" : "test",
+      "CONTACT" : "contact"
 
     } ,
     "STATUS" : {
