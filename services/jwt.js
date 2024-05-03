@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken");
 const config = require("../configs.json");
 
-module.exports.generateToken = ({email, id, roles , username}) => {
+module.exports.generateToken = ({ email, id, roles, username }) => {
     const secretKey = config.JWT_SECRET;
-    const payload = { email, id , roles , username };
+    const payload = { email, id, roles, username };
     const options = { expiresIn: config.JWT_ACCESS_TOKEN_EXPIRY };
     const token = jwt.sign(payload, secretKey, options);
     return token;
@@ -28,7 +28,7 @@ module.exports.validateJwt = (req, res, next) => {
     try {
         const decodedToken = jwt.verify(token, secretKey);
         req.decodedToken = decodedToken;
-        console.log('decodedToken: ', decodedToken);
+        console.log("decodedToken: ", decodedToken);
         next();
     } catch (err) {
         return res.status(401).json({
