@@ -202,7 +202,7 @@ module.exports.loginHandler = async (req, res) => {
       }
 
       // Find user by email, password, and role in the database
-      const user = await dbUtils.findOne({ email: email}, DATABASE_COLLECTIONS.USERS);
+      const user = await dbUtils.findOne({ email: email , password: password}, DATABASE_COLLECTIONS.USERS);
 
       // If user doesn't exist or password doesn't match, return error message
       if (!user) {
