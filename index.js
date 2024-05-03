@@ -20,6 +20,16 @@ const EXPRESS_SESSION_CONFIGS = {
 const app = express();
 app.use(session(EXPRESS_SESSION_CONFIGS));
 
+// Add this middleware to your server configuration
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'https://diagnostic-frontend.vercel.app');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
+});
+
+
 app.use(passport.initialize());
 
 app.use(cors());
