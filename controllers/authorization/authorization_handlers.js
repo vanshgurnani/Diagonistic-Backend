@@ -245,16 +245,17 @@ module.exports.googleHandler = async (req, res) => {
       DATABASE_COLLECTIONS.USERS
     );
     if (user) {
-      // user already exists, provide hime accessToken directly
+      // User already exists, provide him accessToken directly
       const accessToken = jwtService.generateToken(
         email,
         user._id,
         user.username
       );
       res.cookie("accessToken", accessToken, { httpOnly: true });
-      res.redirect(process.env.GOOGLE_UI_SUCCESS_REDIRECT_URL);
+      // Respond with user data and token
+      res.status(200).json({ type: 'Success', user, token: accessToken });
     } else {
-      // register user for him first
+      // Register user first
       user = await dbUtils.create(
         { email, password, firstName, lastName, profileImgUrl, username },
         DATABASE_COLLECTIONS.USERS
@@ -265,14 +266,10 @@ module.exports.googleHandler = async (req, res) => {
         user._id,
         user.username
       );
-      const script = `
-      <script>
-          localStorage.setItem('accessToken', '${accessToken}');
-          window.location.href = '${process.env.GOOGLE_UI_SUCCESS_REDIRECT_URL}';
-      </script>`;
-      res.send(script);
+      
       res.cookie("accessToken", accessToken, { httpOnly: true });
-      res.redirect(process.env.GOOGLE_UI_SUCCESS_REDIRECT_URL);
+      // Respond with user data and token
+      res.status(200).json({ type: 'Success', user, token: accessToken });
     }
   } catch (error) {
     console.log(`[googleHandler] Error occurred: ${error}`);
