@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 const Test = require("../models/test");
 const Contact = require("../models/contact");
-
+const Otp = require("../models/otp");
 
 class DBService {
     constructor() {

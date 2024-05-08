@@ -6,102 +6,187 @@ const configs = require("../../configs.json");
 const s3Utils = require("../../utils/s3");
 const emailService = require("../../services/email_service");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
+const crypto = require("crypto");
 
-module.exports.registerHandler = async (req, res) => {
+module.exports.sendOtp = async (req, res) => {
     try {
-        // Fetch other required fields from request body
-        let requiredFields = [
-            { property: "email", optional: true },
-            { property: "password", optional: true },
-            { property: "username", optional: true },
-            { property: "firstName", optional: true },
-            { property: "lastName", optional: true },
-            { property: "phoneNumber", optional: true },
-            { property: "roles", optional: true },
-            { property: "profileImgUrl", optional: true },
-            { property: "location", optional: true },
-        ];
-        let data = await commonUtils.validateRequestBody(
+        let requiredFields = [{ property: "email", optional: true }];
+        const { email } = await commonUtils.validateRequestBody(
             req.body,
             requiredFields
         );
 
-        // Upload file to S3
-        // const file = req.file;
-        // const fileName = `${data.email}.${file.originalname.split('.').pop()}`;
-        // const imageUrl = await s3Utils.uploadFileToS3(file, fileName, process.env.AWS_BUCKET_NAME);
-        // console.log(imageUrl);
-        // data.profileImgUrl = imageUrl;
-
-        // Save user data to the database
-        const newUser = await dbUtils.create(data, DATABASE_COLLECTIONS.USERS);
-
-        const otp = commonUtils.generateRandomNumber(4);
-
-        const subject = "Your OTP for authentication";
-        const text = `Your OTP is: ${otp}`;
-        const html = `<p>Your OTP is: <strong>${otp}</strong></p>`;
-        await emailService.sendMail(data.email, subject, text, html);
-
-        await dbUtils.updateOne(
-            { email: data.email },
-            { otp: otp },
-            DATABASE_COLLECTIONS.USERS
+        const user = await dbUtils.findOne(
+            { email: email },
+            DATABASE_COLLECTIONS.USERS,
+            undefined
         );
 
-        const message = `${
-            data.username || data.email
-        } is successfully registered.`;
-
-        // Send success response
-        res.status(200).json({ type: "success", message: message, newUser });
-    } catch (error) {
-        if (
-            error.code === 11000 &&
-            error.keyPattern &&
-            error.keyPattern.username
-        ) {
-            return res
-                .status(400)
-                .json({ type: "Error", error: "Username is already taken." });
+        if (user) {
+            return res.status(403).json({
+                error: `${req.body.email} is already registered.`,
+                message: `${req.body.email} is already registered.`,
+            });
         }
-        console.log(`[registerHandler] Error occurred: ${error}`);
-        res.status(400).json({ type: "error", error: error.message });
+
+        // generate otp
+        const otpNumber = commonUtils.generateRandomOtp(configs.OTP_LENGTH);
+
+        const newOtp = await dbUtils.create(
+            {
+                email: email,
+                otp: otpNumber,
+            },
+            DATABASE_COLLECTIONS.OTPS
+        );
+
+        res.status(200).json({
+            message: `OTP sent successfully for - ${email}`,
+        });
+    } catch (error) {
+        res.status(400).json({
+            error: `${error.message}`,
+        });
     }
 };
 
-module.exports.verifyOtpController = async (req, res) => {
+module.exports.loginHandler = async (req, res) => {
     try {
-        const { email, otp } = req.body;
+        let requiredFields = [
+            { property: "email", optional: true },
+            { property: "password", optional: true },
+        ];
 
-        // Combine OTP digits into a single string and parse it into a number
-        const parsedOtp = parseInt(otp.join(""));
+        const { password, email } = await commonUtils.validateRequestBody(
+            req.body,
+            requiredFields
+        );
 
-        console.log(parsedOtp);
-
-        // Retrieve user from the database using the email
         const user = await dbUtils.findOne(
-            { email },
+            { email: req.body.email },
+            DATABASE_COLLECTIONS.USERS,
+            undefined,
+            `Email ${req.body.email} is not registered.`
+        );
+
+        console.log("login user data ", user);
+
+        let accessToken = null;
+        if (password === user?.password) {
+            accessToken = jwtService.generateToken({
+                email: user.email,
+                id: user._id,
+            });
+
+            res.status(200).json({
+                message: "Login Successfully!",
+                accessToken: accessToken,
+            });
+        } else {
+            res.status(403).json({
+                error: "Invalid password.",
+            });
+        }
+    } catch (error) {
+        console.log(`[loginHandler] Error occurred: ${error}`);
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
+
+module.exports.registerHandler = async (req, res) => {
+    try {
+        console.log("req files ", req.files);
+        const user = await dbUtils.findOne(
+            { email: req.body.email },
             DATABASE_COLLECTIONS.USERS
         );
 
-        // Check if the user exists and if the provided OTP matches the one in the database
-        if (!user || user.otp !== parsedOtp) {
-            return res.status(400).json({ message: "Invalid OTP" });
+        let requiredFields = [
+            { property: "email", optional: true },
+            { property: "password", optional: true },
+            { property: "firstName", optional: true },
+            { property: "lastName", optional: true },
+            { property: "otp", optional: true },
+        ];
+
+        const newObj = await commonUtils.validateRequestBody(
+            req.body,
+            requiredFields
+        );
+
+        // Email verification code
+        const pipline = [
+            {
+                $match: {
+                    email: newObj.email,
+                },
+            },
+            {
+                $sort: { createdAt: -1 },
+            },
+            {
+                $limit: 1,
+            },
+        ];
+
+        const checkOtp = await dbUtils.aggregate(
+            pipline,
+            DATABASE_COLLECTIONS.OTPS
+        );
+
+        if (!checkOtp?.length) {
+            return res.status(408).json({
+                error: ` Otp is expired .`,
+                message: "Otp expired",
+            });
+        }
+        if (checkOtp[0]?.otp !== newObj.otp) {
+            return res.status(403).json({
+                error: `Otp not matched`,
+                message: "Otp not matched",
+            });
         }
 
-        // Clear the OTP field in the user document
-        await dbUtils.updateOne(
-            { email },
-            { otp: null },
-            DATABASE_COLLECTIONS.USERS
-        );
+        if (user) {
+            return res.status(403).json({
+                error: `${req.body.email} is already registered.`,
+            });
+        } else {
+            const images = await uploadImages(req.files, req.body.email);
+            console.log("uploaded imgaes", images);
 
-        // Send success response
-        res.status(200).json({ message: "OTP verified successfully" });
+            // Todo
+            // const hashedPassword = await bcrypt.hash(newObj.password, 10);
+
+            const newUser = await dbUtils.create(
+                { ...newObj, ...images },
+                DATABASE_COLLECTIONS.USERS
+            );
+
+            console.log("user", newUser);
+            const accessToken = jwtService.generateToken(
+                newObj?.email,
+                newUser?._id
+            );
+
+            console.log(`New user - ${JSON.stringify(newUser)}`);
+
+            return res.status(200).json({
+                message: `user created successfully with email - ${req.body.email}`,
+                accessToken: accessToken,
+                email: newUser?.email,
+            });
+        }
     } catch (error) {
-        console.error("[verifyOtpController] Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        console.log(`[register] Error occured : ${error}`);
+        if (error.message.includes("username_1 dup key")) {
+            error.message = `Username is already taken.`;
+        }
+        res.status(400).json({
+            error: error.message,
+        });
     }
 };
 
@@ -250,50 +335,6 @@ module.exports.findDistanceController = async (req, res) => {
     }
 };
 
-module.exports.loginHandler = async (req, res) => {
-    try {
-        // Fetch email, password, and roles from request body
-        const { email, password } = req.body;
-
-        // Check if email, password, and roles are provided
-        if (!email || !password) {
-            return res.status(400).json({
-                type: "Error",
-                message: "Email, password, and roles are required.",
-            });
-        }
-
-        // Find user by email, password, and role in the database
-        const user = await dbUtils.findOne(
-            { email: email, password: password },
-            DATABASE_COLLECTIONS.USERS
-        );
-
-        // If user doesn't exist or password doesn't match, return error message
-        if (!user) {
-            return res.status(400).json({
-                type: "Error",
-                message: "Invalid email, password, or role.",
-            });
-        }
-
-        // Generate JWT token for the user including additional properties
-        const tokenData = {
-            id: user._id,
-            email: user.email,
-            roles: user.roles,
-            username: user.username,
-        };
-        const token = jwtService.generateToken(tokenData);
-
-        // Send Success response with token
-        res.status(200).json({ type: "Success", token: token });
-    } catch (error) {
-        console.error(`[loginHandler] Error occurred: ${error}`);
-        res.status(400).json({ type: "Error", message: error.message });
-    }
-};
-
 module.exports.googleHandler = async (req, res) => {
     try {
         console.log(`Google profile - ${JSON.stringify(req.user)}`);
@@ -319,7 +360,6 @@ module.exports.googleHandler = async (req, res) => {
                 id: user._id,
                 email: user.email,
                 roles: user.roles,
-                username: user.username,
             };
             const accessToken = jwtService.generateToken(tokenData);
             res.cookie("accessToken", accessToken, { httpOnly: true });
@@ -345,7 +385,6 @@ module.exports.googleHandler = async (req, res) => {
                 id: user._id,
                 email: user.email,
                 roles: user.roles,
-                username: user.username,
             };
             const accessToken = jwtService.generateToken(tokenData);
 
@@ -360,3 +399,119 @@ module.exports.googleHandler = async (req, res) => {
         res.redirect(`${process.env.GOOGLE_UI_FAILURE_REDIRECT_URL}`);
     }
 };
+
+module.exports.createResetPasswordToken = async (req, res) => {
+    try {
+        let requiredFields = [{ property: "email", optional: true }];
+        const { email } = await commonUtils.validateRequestBody(
+            req.body,
+            requiredFields
+        );
+
+        const user = await dbUtils.findOne(
+            { email: req.body.email },
+            DATABASE_COLLECTIONS.USERS,
+            "User not registered"
+        );
+
+        // creating unique token
+        const token = crypto.randomBytes(20).toString("hex");
+        // await uuid();
+
+        const addToken = await dbUtils.updateOne(
+            { email: email },
+            {
+                resetPasswordToken: token,
+                resetPasswordExpires: Date.now() + 60 * 1000,
+            },
+            DATABASE_COLLECTIONS.USERS
+        );
+
+        const url = `${process.env.FRONTEND_URL}/update-password/${token}`;
+        const html = commonUtils.passwordResetEmailTemplate(url);
+        const emailSubject = "Portfolioo Update Password";
+        const emailText = null;
+
+        await emailService.sendMail(email, emailSubject, emailText, html);
+
+        return res.status(200).json({
+            success: true,
+            massage: "reset password token created",
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            massage: "Failed to reset password ",
+        });
+    }
+};
+
+module.exports.resetPassword = async (req, res) => {
+    try {
+        let requiredFields = [
+            { property: "token", optional: true },
+            { property: "password", optional: true },
+            { property: "confirmPassword", optional: true },
+        ];
+        const { password, token, confirmPassword } =
+            await commonUtils.validateRequestBody(req.body, requiredFields);
+
+        const user = await dbUtils.findOne(
+            { resetPasswordToken: token },
+            DATABASE_COLLECTIONS.USERS
+        );
+
+        console.log("user ", user);
+        // check date is expired or not
+        if (new Date(user.resetPasswordExpires) < Date.now()) {
+            return res.status(408).json({
+                success: false,
+                massage: "Token is expired. Regenerate ",
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(413).json({
+                success: false,
+                massage: "Password not matched",
+            });
+        }
+
+        await dbUtils?.updateOne(
+            { resetPasswordToken: token },
+            { password: password },
+            DATABASE_COLLECTIONS.USERS
+        );
+
+        // send response
+        return res.status(200).json({
+            success: true,
+            massage: "password reset",
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(413).json({
+            success: false,
+            massage: "Token not matched",
+        });
+    }
+};
+
+async function uploadImages(files, email) {
+    const uploadedImages = {};
+
+    if (files && files.profileImgUrl) {
+        const fileKey = `${email}-profile.jpeg`;
+        const params = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: fileKey,
+            Body: files.profileImgUrl[0].buffer,
+            ContentType: files.profileImgUrl[0].mimetype,
+        };
+        const uploadResult = await s3Utils.uploadFileToS3(params);
+        uploadedImages.profileImgUrl = uploadResult.Location;
+    }
+
+    return uploadedImages;
+}

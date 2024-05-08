@@ -4,20 +4,24 @@ const configs = require("../configs.json");
 const DATABASE = configs.CONSTANTS;
 
 const userSchema = new Schema({
-    username:{
+    username: {
         type: String,
     },
-    firstName : {
-        type: String
-    } ,
-    lastName : {
-        type: String
-    } ,
+    firstName: {
+        type: String,
+    },
+    lastName: {
+        type: String,
+    },
     status: {
         type: String,
-        enum: [DATABASE.STATUS.ACTIVE, DATABASE.STATUS.INACTIVE, DATABASE.STATUS.PENDING],
-        default: DATABASE.STATUS.ACTIVE
-    },   
+        enum: [
+            DATABASE.STATUS.ACTIVE,
+            DATABASE.STATUS.INACTIVE,
+            DATABASE.STATUS.PENDING,
+        ],
+        default: DATABASE.STATUS.ACTIVE,
+    },
     password: {
         type: String,
     },
@@ -31,11 +35,15 @@ const userSchema = new Schema({
     },
     phoneNumber: {
         type: String,
-    } ,
+    },
     roles: {
         type: String,
-        enum: [DATABASE.ROLES.USER , DATABASE.ROLES.PATIENT , DATABASE.ROLES.CENTER],
-        defaultValue: DATABASE.ROLES.PATIENT
+        enum: [
+            DATABASE.ROLES.USER,
+            DATABASE.ROLES.PATIENT,
+            DATABASE.ROLES.CENTER,
+        ],
+        defaultValue: DATABASE.ROLES.PATIENT,
     },
     createdAt: {
         type: Date,
@@ -44,7 +52,7 @@ const userSchema = new Schema({
     createdAt_EP: {
         type: Number,
         default: Math.floor(Date.now() / 1000),
-        index: true
+        index: true,
     },
     updatedAt: {
         type: Date,
@@ -53,7 +61,7 @@ const userSchema = new Schema({
     updatedAt_EP: {
         type: Number,
         default: Math.floor(Date.now() / 1000),
-        index: true
+        index: true,
     },
     profileImgUrl: {
         type: String,
@@ -65,17 +73,19 @@ const userSchema = new Schema({
         type: Date,
     },
     location: {
-        name: String, 
+        name: String,
     },
-    coordinates: { 
+    coordinates: {
         type: [Number],
-        index: '2dsphere', 
+        index: "2dsphere",
     },
-    otp: {
-        type: Number,
-        default: 0
-    }
+    resetPasswordToken: {
+        type: String,
+    },
+    resetPasswordExpires: {
+        type: Date,
+    },
 });
 
-const User = mongoose.model(DATABASE.DATABASE_COLLECTIONS.USERS , userSchema);
+const User = mongoose.model(DATABASE.DATABASE_COLLECTIONS.USERS, userSchema);
 module.exports = User;

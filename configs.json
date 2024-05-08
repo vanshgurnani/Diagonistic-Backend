@@ -1,24 +1,24 @@
 {
-  "CONSTANTS": {
-    "DATABASE_COLLECTIONS": {
-      "USERS": "user",
-      "TEST" : "test",
-      "CONTACT" : "contact"
+    "CONSTANTS": {
+        "DATABASE_COLLECTIONS": {
+            "USERS": "user",
+            "OTPS": "otp",
+            "TEST": "test",
+            "CONTACT": "contact"
+        },
+        "STATUS": {
+            "ACTIVE": "ACTIVE",
+            "INACTIVE": "INACTIVE",
+            "PENDING": "PENDING"
+        },
 
-    } ,
-    "STATUS" : {
-      "ACTIVE" : "ACTIVE" ,
-      "INACTIVE" : "INACTIVE" ,
-      "PENDING" : "PENDING"
-    } ,
-
-    "ROLES" : {
-      "USER" : "USER", 
-      "PATIENT" : "PATIENT" ,
-      "CENTER" : "CENTER"
-    }
-
-  },
-  "JWT_SECRET": "reierjuoreitn",
-  "JWT_ACCESS_TOKEN_EXPIRY": "720h"
+        "ROLES": {
+            "USER": "USER",
+            "PATIENT": "PATIENT",
+            "CENTER": "CENTER"
+        }
+    },
+    "JWT_SECRET": "reierjuoreitn",
+    "JWT_ACCESS_TOKEN_EXPIRY": "720h",
+    "OTP_LENGTH": 4
 }
