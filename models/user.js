@@ -43,7 +43,7 @@ const userSchema = new Schema({
             DATABASE.ROLES.PATIENT,
             DATABASE.ROLES.CENTER,
         ],
-        defaultValue: DATABASE.ROLES.PATIENT,
+        default: DATABASE.ROLES.PATIENT,
     },
     createdAt: {
         type: Date,

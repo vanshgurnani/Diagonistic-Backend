@@ -76,12 +76,13 @@ module.exports.aggregate = async (pipeline, collectionName) => {
     }
 };
 
-module.exports.updateOne = async (filter, update, collectionName) => {
+module.exports.updateOne = async (filter, update, collectionName, upsert=false) => {
     try {
         const collectionModel = await databaseObject.getModel(collectionName);
         console.log(`[dbUtils-updateOne] Executing updateOne over ${collectionName} - \nFilter: ${JSON.stringify(filter)} - Update: ${JSON.stringify(update)}`);
 
-        const result = await collectionModel.updateOne(filter, update);
+        // Add the default option upsert: false to the updateOne method
+        const result = await collectionModel.updateOne(filter, update, { upsert });
 
         console.log(`[dbUtils-updateOne] updateOne result over ${collectionName} - \n${JSON.stringify(result)}`);
 
@@ -104,6 +105,22 @@ module.exports.deleteOne = async (filter, collectionName) => {
         return result;
     } catch (error) {
         console.log(`[dbUtils-deleteOne] Error deleting document: ${error}`);
+        throw error;
+    }
+};
+
+module.exports.deleteMany = async (filter, collectionName) => {
+    try {
+        const collectionModel = await databaseObject.getModel(collectionName);
+        console.log(`[dbUtils-deleteMany] Executing deleteMany over ${collectionName} - \nFilter: ${JSON.stringify(filter)}`);
+
+        const result = await collectionModel.deleteMany(filter);
+
+        console.log(`[dbUtils-deleteMany] deleteMany result over ${collectionName} - \n${JSON.stringify(result)}`);
+
+        return result;
+    } catch (error) {
+        console.log(`[dbUtils-deleteMany] Error deleting many document: ${error}`);
         throw error;
     }
 };
@@ -161,6 +178,23 @@ module.exports.createIndex = async (fields, collectionName) => {
         return result;
     } catch (error) {
         console.error("Error creating index:", error);
+        throw error;
+    }
+};
+
+module.exports.bulkWrite = async (bulkOperations, collectionName) => {
+    try {
+        const collectionModel = await databaseObject.getModel(collectionName);
+        console.log(`[dbUtils-bulkWrite] Executing bulkWrite over ${collectionName}`);
+
+        // Execute bulkWrite operation
+        const result = await collectionModel.bulkWrite(bulkOperations);
+
+        console.log(`[dbUtils-bulkWrite] bulkWrite result over ${collectionName} - \n${JSON.stringify(result)}`);
+
+        return result;
+    } catch (error) {
+        console.log(`[dbUtils-bulkWrite] Error executing bulkWrite operation: ${error}`);
         throw error;
     }
 };

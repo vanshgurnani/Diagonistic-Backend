@@ -4,12 +4,15 @@
             "USERS": "user",
             "OTPS": "otp",
             "TEST": "test",
-            "CONTACT": "contact"
+            "CONTACT": "contact",
+            "CENTER" : "center"
         },
         "STATUS": {
             "ACTIVE": "ACTIVE",
             "INACTIVE": "INACTIVE",
-            "PENDING": "PENDING"
+            "PENDING": "PENDING",
+            "VISITED" : "VISITED" ,
+            "PUBLISHED" : "PUBLISHED"
         },
 
         "ROLES": {

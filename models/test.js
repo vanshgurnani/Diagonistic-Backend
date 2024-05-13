@@ -5,13 +5,55 @@ const DATABASE = configs.CONSTANTS;
 // Define schema for Test document
 const testSchema = new mongoose.Schema({
   TestName: {
-    type: String
+    type: String,
+    default : ''
   },
   Category: {
-    type: String
+    type: String,
+    default : ''
   },
   rate: {
-    type: Number
+    type: Number,
+    default : 0
+  } , 
+  discount : {
+    type : Number,
+    default : 0
+  } , 
+  available : {
+    type : Boolean,
+    default: false
+  } , 
+  finalPrice : {
+    type : Number,
+    default : 0
+  } , 
+  action : {
+    type: String,
+      enum: [
+          DATABASE.STATUS.PUBLISHED,
+          DATABASE.STATUS.VISITED,
+          DATABASE.STATUS.PENDING,
+      ],
+      default: DATABASE.STATUS.PENDING,
+  } ,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  createdAt_EP: {
+      type: Number,
+      default: Math.floor(Date.now() / 1000),
+      index: true,
+  },
+  updatedAt: {
+      type: Date,
+      default: Date.now,
+  },
+  updatedAt_EP: {
+      type: Number,
+      default: Math.floor(Date.now() / 1000),
+      index: true,
   }
 });
 
