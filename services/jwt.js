@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken");
 const config = require("../configs.json");
 
-module.exports.generateToken = ({ email, id }) => {
+module.exports.generateToken = ({ email, id , firstname , lastname , phonenumber }) => {
     const secretKey = config.JWT_SECRET;
-    const payload = { email, id };
+    const payload = { email, id ,firstname , lastname ,  phonenumber };
     const options = { expiresIn: config.JWT_ACCESS_TOKEN_EXPIRY };
     const token = jwt.sign(payload, secretKey, options);
     return token;

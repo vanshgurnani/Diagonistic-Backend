@@ -76,6 +76,9 @@ module.exports.loginHandler = async (req, res) => {
             accessToken = jwtService.generateToken({
                 email: user.email,
                 id: user._id,
+                firstname: user.firstName,
+                lastname : user.lastName,
+                phonenumber : user.phoneNumber
             });
 
             res.status(200).json({
@@ -168,7 +171,10 @@ module.exports.registerHandler = async (req, res) => {
             console.log("user", newUser);
             const accessToken = jwtService.generateToken(
                 newObj?.email,
-                newUser?._id
+                newUser?._id,
+                newUser?.firstName,
+                newUser?.lastName,
+                newUser?.phoneNumber
             );
 
             console.log(`New user - ${JSON.stringify(newUser)}`);

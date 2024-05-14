@@ -5,14 +5,17 @@
             "OTPS": "otp",
             "TEST": "test",
             "CONTACT": "contact",
-            "CENTER" : "center"
+            "CENTER" : "center",
+            "BOOKING" : "booking"
         },
         "STATUS": {
             "ACTIVE": "ACTIVE",
             "INACTIVE": "INACTIVE",
             "PENDING": "PENDING",
             "VISITED" : "VISITED" ,
-            "PUBLISHED" : "PUBLISHED"
+            "PUBLISHED" : "PUBLISHED",
+            "ACCEPTED" : "ACCEPTED",
+            "REJECTED" : "REJECTED"
         },
 
         "ROLES": {

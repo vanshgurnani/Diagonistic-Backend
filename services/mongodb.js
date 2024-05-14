@@ -4,7 +4,7 @@ const Test = require("../models/test");
 const Contact = require("../models/contact");
 const Otp = require("../models/otp");
 const center = require("../models/center");
-
+const booking = require("../models/booking");
 class DBService {
     constructor() {
         console.log(`Initializing database connection.`);
