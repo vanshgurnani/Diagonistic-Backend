@@ -1,0 +1,70 @@
+User:
+- UserID (Primary Key) - Integer
+- Username - String
+- Password - String (hashed for security)
+- Email - String
+- OTP - String (for two-factor authentication)
+- RoleID (Foreign Key) - Integer (references Roles table)
+
+Roles:
+- RoleID (Primary Key) - Integer
+- RoleName - String (Super Admin, Patient, Center Admin)
+- AllowedEndpoints - Array of Strings (API endpoints accessible to this role)
+
+Center:
+- CenterID (Primary Key) - Integer
+- Name - String
+- Location - String (Address or Coordinates)
+- Contact Information - String (Phone number, email, etc.)
+- Description - Text
+- Tests Provided - Array of Strings
+- Services Provided (Home/On-site) - Array of Strings
+- Operating Hours - Array of Objects (DayOfWeek, OpeningTime, ClosingTime)
+- Featured Tests - Array of Objects (TestID, Test Name, Description, Amount)
+
+Featured Tests:
+- TestID (Primary Key) - Integer
+- CenterID (Foreign Key) - Integer
+- Test Name - String
+- Description - Text
+- Amount - Decimal
+
+Patient:
+- PatientID (Primary Key) - Integer
+- Name - String
+- Contact Information - String (Phone number, email, etc.)
+- Date of Birth - Date
+- Gender - String
+- Address - String
+- Email - String
+- Location - String (Address or Coordinates)
+
+Appointments:
+- AppointmentID (Primary Key) - Integer
+- PatientID (Foreign Key) - Integer
+- CenterID (Foreign Key) - Integer
+- Test Name - String
+- Appointment Date - Date
+- Appointment Time - Time
+- Status - String (Scheduled, Completed, Cancelled, etc.)
+
+Report:
+- TestResultID (Primary Key) - Integer
+- PatientID (Foreign Key) - Integer
+- TestID (Foreign Key) - Integer
+- Billing Information - Array of Objects (BillingID, Amount, Invoice Number, Payment Date, Payment Method, Insurance Claim Status, Commission Flag, Commission Rate, Commission Amount)
+- Result - Text
+- Comments - Text
+
+Billing Information:
+- BillingID (Primary Key) - Integer
+- PatientID (Foreign Key) - Integer
+- CenterID (Foreign Key) - Integer
+- Amount - Decimal
+- Invoice Number - String
+- Payment Date - Date
+- Payment Method - String
+- Insurance Claim Status - String
+- Commission Flag - Boolean
+- Commission Rate - Decimal
+- Commission Amount - Decimal
