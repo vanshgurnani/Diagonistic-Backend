@@ -18,9 +18,6 @@ const centerSchema = new mongoose.Schema({
     Location: {
       type: String
     },
-    ContactInformation: {
-      type: String
-    },
     Description: {
       type: String
     },
@@ -41,6 +38,9 @@ const centerSchema = new mongoose.Schema({
         discount: Number,
         available: Boolean
       }]
+    } , 
+    certificate : {
+      type : [String]
     }
   });
 
