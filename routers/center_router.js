@@ -35,5 +35,6 @@ const uploadFields = upload.fields([
 ]);
 
 router.post('/', uploadFields , Center.createCenter);
+router.get('/', Center.getCenter);
 
 module.exports = router;
