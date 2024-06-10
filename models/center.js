@@ -12,6 +12,9 @@ const centerSchema = new mongoose.Schema({
     centerEmail: {
       type: String
     },
+    centerImg: {
+      type: String
+    },
     password: {
       type: String
     },
