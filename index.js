@@ -12,6 +12,11 @@ const testRouter = require("./routers/test_router");
 const contactRouter = require("./routers/contact_router");
 const dashboardRouter = require("./routers/dasboard_router");
 const bookingRouter = require("./routers/booking_router");
+<<<<<<< HEAD
+const centerRouter = require("./routers/center_router");
+
+=======
+>>>>>>> main
 
 const EXPRESS_SESSION_CONFIGS = {
     secret: process.env.EXPRESS_SESSION_SECRET_KEY,
@@ -56,6 +61,8 @@ app.use("/api/test", testRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/booking", bookingRouter);
+app.use("/api/center", centerRouter);
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

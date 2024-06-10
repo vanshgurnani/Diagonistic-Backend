@@ -20,7 +20,8 @@ const bookingSchema = new mongoose.Schema({
         type: String
     },
     preferredDoctorName: {
-        type: String
+        type: String,
+        default: "NULL"
     },
     action: {
         type: String,
