@@ -6,7 +6,8 @@
             "TEST": "test",
             "CONTACT": "contact",
             "CENTER" : "center",
-            "BOOKING" : "booking"
+            "BOOKING" : "booking",
+            "CENTER_OTPS": "center-otp"
         },
         "STATUS": {
             "ACTIVE": "ACTIVE",

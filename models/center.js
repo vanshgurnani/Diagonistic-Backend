@@ -54,6 +54,9 @@ const centerSchema = new mongoose.Schema({
     nabh: {
       type: String
     },
+    otp: {
+      type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now,

@@ -34,6 +34,8 @@ const uploadFields = upload.fields([
     { name: 'nabh', maxCount: 1 }
 ]);
 
+router.post('/otp', Center.sendCenterOtp);
+
 router.post('/', uploadFields , Center.createCenter);
 router.get('/', Center.getCenter);
 
