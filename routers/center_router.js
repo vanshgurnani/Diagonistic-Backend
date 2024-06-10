@@ -6,15 +6,17 @@ const multer = require('multer');
 
 // Define a custom file filter function
 const fileFilter = (req, file, cb) => {
-    // Check if the uploaded file is a PDF or DOC file
+    // Check if the uploaded file is a PDF, DOC, JPEG, or PNG file
     if (file.mimetype === 'application/pdf' || 
         file.mimetype === 'application/msword' || 
-        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        file.mimetype === 'image/jpeg' ||
+        file.mimetype === 'image/png') {
         // Accept the file
         cb(null, true);
     } else {
         // Reject the file
-        cb(new Error('Only PDF and DOC files are allowed!'), false);
+        cb(new Error('Only PDF, DOC, JPEG, and PNG files are allowed!'), false);
     }
 };
 
@@ -31,7 +33,9 @@ const uploadFields = upload.fields([
     { name: 'pcpndt', maxCount: 1 },
     { name: 'iso', maxCount: 1 },
     { name: 'nabl', maxCount: 1 },
-    { name: 'nabh', maxCount: 1 }
+    { name: 'nabh', maxCount: 1 },
+    { name: 'centerImg', maxCount: 1 },
+
 ]);
 
 router.post('/otp', Center.sendCenterOtp);

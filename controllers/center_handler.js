@@ -35,7 +35,8 @@ module.exports.sendCenterOtp = async (req, res) => {
 };
 
 module.exports.createCenter = async(req,res) =>{
-    try{
+    try{       
+        
         const requiredFields = [
             { property: "centerName", optional: true },
             { property: "centerContact", optional: true },
@@ -83,7 +84,8 @@ module.exports.createCenter = async(req,res) =>{
             pcpndt: '',
             iso: '',
             nabl: '',
-            nabh: ''
+            nabh: '',
+            centerImg: ''
         };
 
         if (req.files) {
@@ -112,7 +114,8 @@ module.exports.createCenter = async(req,res) =>{
             pcpndt: uploadedFiles.pcpndt,
             iso: uploadedFiles.iso,
             nabl: uploadedFiles.nabl,
-            nabh: uploadedFiles.nabh
+            nabh: uploadedFiles.nabh,
+            centerImg: uploadedFiles.centerImg
 
         }
 
