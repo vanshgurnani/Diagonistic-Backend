@@ -3,45 +3,76 @@ const configs = require("../configs.json");
 const DATABASE = configs.CONSTANTS;
 
 const centerSchema = new mongoose.Schema({
-    Name: {
+    centerName: {
+      type: String
+    },
+    centerContact: {
+      type: String
+    },
+    centerEmail: {
+      type: String
+    },
+    password: {
       type: String
     },
     ownerName : {
       type: String
     },
-    ownerEmail : {
-      type: String
-    },
     ownerContact : {
       type: String
     },
-    Location: {
+    ownerEmail : {
       type: String
     },
-    Description: {
+    centerGST: {
+      type: Number
+    },
+    address: {
       type: String
     },
-    ServicesProvided: {
-      type: [String]
+    addressProof: {
+      type: String
     },
-    OperatingHours: {
-      type: [{
-        OpeningTime: Date, 
-        ClosingTime: Date   
-      }]
+    staffNumber: {
+      type: Number
     },
-    FeaturedTests: {
-      type: [{
-        TestName: String,
-        Category: String,
-        rate: Number,
-        discount: Number,
-        available: Boolean
-      }]
-    } , 
-    certificate : {
-      type : [String]
+    shopAct: {
+      type: String
+    },
+    shopAct: {
+      type: String
+    },
+    pcpndt: {
+      type: String
+    },
+    iso: {
+      type: String
+    },
+    nabl: {
+      type: String
+    },
+    nabh: {
+      type: String
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    createdAt_EP: {
+        type: Number,
+        default: Math.floor(Date.now() / 1000),
+        index: true,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
+    updatedAt_EP: {
+        type: Number,
+        default: Math.floor(Date.now() / 1000),
+        index: true,
     }
+
   });
 
 const Center = mongoose.model(DATABASE.DATABASE_COLLECTIONS.CENTER , centerSchema);
