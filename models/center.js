@@ -60,6 +60,16 @@ const centerSchema = new mongoose.Schema({
     otp: {
       type: String
     },
+    status: {
+      type: String,
+      enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE , DATABASE.STATUS.PENDING],
+      default: DATABASE.STATUS.PENDING
+    },
+    FeaturedTests: [{
+      TestName: String,
+      Category: String,
+      rate: Number
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

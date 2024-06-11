@@ -7,7 +7,8 @@
             "CONTACT": "contact",
             "CENTER" : "center",
             "BOOKING" : "booking",
-            "CENTER_OTPS": "center-otp"
+            "CENTER_OTPS": "center-otp",
+            "CENTER_VERIFY": "center-verify"
         },
         "STATUS": {
             "ACTIVE": "ACTIVE",

@@ -6,6 +6,7 @@ const Otp = require("../models/otp");
 const center = require("../models/center");
 const booking = require("../models/booking");
 const center_otp = require("../models/center_otp");
+const center_verify = require("../models/center_verify");
 class DBService {
     constructor() {
         console.log(`Initializing database connection.`);
