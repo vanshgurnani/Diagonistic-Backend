@@ -198,3 +198,19 @@ module.exports.bulkWrite = async (bulkOperations, collectionName) => {
         throw error;
     }
 };
+
+module.exports.countDocuments = async (filter, collectionName) => {
+    try {
+        const collectionModel = await databaseObject.getModel(collectionName);
+        console.log(`[dbUtils-countDocuments] Counting documents in ${collectionName} - Filter: ${JSON.stringify(filter)}`);
+
+        const count = await collectionModel.countDocuments(filter);
+
+        console.log(`[dbUtils-countDocuments] Document count in ${collectionName} - \n${count}`);
+
+        return count;
+    } catch (error) {
+        console.log(`[dbUtils-countDocuments] Error counting documents: ${error}`);
+        throw error;
+    }
+};
