@@ -43,4 +43,9 @@ router.post('/otp', Center.sendCenterOtp);
 router.post('/', uploadFields , Center.createCenter);
 router.get('/', Center.getCenter);
 
+router.post('/login', Center.loginHandler);
+router.get('/profile', JwtService.validateJwt ,  Center.centerProfile);
+
+
+
 module.exports = router;

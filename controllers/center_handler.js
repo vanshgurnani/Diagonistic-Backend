@@ -3,6 +3,7 @@ const commonUtils = require("../utils/common");
 const configs = require("../configs.json");
 const s3Utils = require("../utils/s3");
 const emailService = require("../services/email_service");
+const jwtService = require("../services/jwt_center");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
 
 module.exports.sendCenterOtp = async (req, res) => {
@@ -127,7 +128,7 @@ module.exports.createCenter = async(req,res) =>{
         console.error(`[CenterController] Error occurred: ${error}`);
         res.status(500).json({ type: 'Error', message: "Failed to create center." });
     }
-}
+};
 
 module.exports.getCenter = async (req, res) => {
     try {
@@ -198,3 +199,77 @@ module.exports.getCenter = async (req, res) => {
       res.status(500).json({ type: 'Error', message: "Internal server error." });
     }
 };
+
+module.exports.loginHandler = async (req, res) => {
+  try {
+      let requiredFields = [
+          { property: "email", optional: true },
+          { property: "password", optional: true },
+      ];
+
+      const { email , password } = await commonUtils.validateRequestBody(
+          req.body,
+          requiredFields
+      );
+
+      const user = await dbUtils.findOne(
+          { centerEmail: email },
+          DATABASE_COLLECTIONS.CENTER
+      );
+
+      console.log("login user data ", user);
+
+      let accessToken = null;
+      if (password === user?.password) {
+          accessToken = jwtService.generateToken({
+              email: user.centerEmail
+          });
+
+          res.status(200).json({
+              message: "Login Successfully!",
+              accessToken: accessToken,
+          });
+      } else {
+          res.status(403).json({
+              error: "Invalid password.",
+          });
+      }
+  } catch (error) {
+      console.log(`[centerLoginHandler] Error occurred: ${error}`);
+      res.status(500).json({
+          error: error.message,
+      });
+  }
+};
+
+module.exports.centerProfile =  async(req, res) => {
+  try{
+    const email = req.decodedToken.email;
+
+    console.log(email);
+
+    const projection = { password: 0 };
+    // Fetch user profile from the database using the user ID
+    const centerProfile = await dbUtils.findOne(
+        {centerEmail : email},
+        DATABASE_COLLECTIONS.CENTER,
+        projection
+    );
+
+    // Check if user profile exists
+    if (!centerProfile) {
+        return res
+            .status(404)
+            .json({ type: "Error", message: "Center profile not found." });
+    }
+
+    // Return user profile in the response
+    res.status(200).json({ type: "Success", centerProfile });
+  }
+  catch (error) {
+    console.log(`[centerProfileHandler] Error occurred: ${error}`);
+    res.status(500).json({
+        error: error.message,
+    });
+  }
+}
