@@ -23,6 +23,10 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         default: "NULL"
     },
+    payementId: {
+        type: String,
+        default: "NULL"
+    },
     action: {
         type: String,
         enum: [DATABASE.STATUS.ACCEPTED , DATABASE.STATUS.REJECTED , DATABASE.STATUS.PENDING], // Possible actions for the booking
