@@ -61,6 +61,7 @@ module.exports.getBooking = async (req, res) => {
         appointmentDateTime: 1,
         testName: 1,
         preferredDoctorName: 1,
+        payementId: 1,
         action: 1,
         createdAt: 1
       };

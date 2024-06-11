@@ -524,7 +524,10 @@ async function uploadImages(files, email) {
 
 module.exports.getAllUsers = async (req, res) => {
     try {
-        const users = await dbUtils.findMany({ roles: configs.CONSTANTS.ROLES.PATIENT }, DATABASE_COLLECTIONS.USERS);
+
+        const projection = {password : 0};
+
+        const users = await dbUtils.findMany({ roles: configs.CONSTANTS.ROLES.PATIENT }, DATABASE_COLLECTIONS.USERS , projection);
 
         if (users.length === 0) {
             return res.status(404).json({
