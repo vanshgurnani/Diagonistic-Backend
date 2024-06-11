@@ -60,5 +60,6 @@ router.get(
 router.get("/location", auth.locationGet);
 router.post("/forgot-password", auth.resetPassword);
 router.post("/forgot-password-token", auth.createResetPasswordToken);
+router.get("/all" , auth.getAllUsers);
 
 module.exports = router;

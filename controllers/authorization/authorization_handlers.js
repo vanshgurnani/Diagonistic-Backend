@@ -521,3 +521,28 @@ async function uploadImages(files, email) {
 
     return uploadedImages;
 }
+
+module.exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await dbUtils.findMany({ roles: configs.CONSTANTS.ROLES.PATIENT }, DATABASE_COLLECTIONS.USERS);
+
+        if (users.length === 0) {
+            return res.status(404).json({
+                type: "Error",
+                message: "No users found.",
+            });
+        }
+
+        res.status(200).json({
+            type: "Success",
+            users: users,
+        });
+    } catch (error) {
+        console.error(`[getAllUsers] Error occurred: ${error}`);
+        res.status(500).json({
+            type: "Error",
+            message: "Internal server error.",
+        });
+    }
+};
+
