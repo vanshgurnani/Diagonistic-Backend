@@ -248,7 +248,7 @@ module.exports.loginHandler = async (req, res) => {
       );
 
       const user = await dbUtils.findOne(
-          { ownerEmail: email },
+          { email: email },
           DATABASE_COLLECTIONS.CENTER
       );
 
