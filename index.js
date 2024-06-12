@@ -13,6 +13,7 @@ const contactRouter = require("./routers/contact_router");
 const dashboardRouter = require("./routers/dasboard_router");
 const bookingRouter = require("./routers/booking_router");
 const centerRouter = require("./routers/center_router");
+const centerVerifyRouter = require("./routers/center_verify_router");
 
 
 const EXPRESS_SESSION_CONFIGS = {
@@ -59,6 +60,8 @@ app.use("/api/contact", contactRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/booking", bookingRouter);
 app.use("/api/center", centerRouter);
+app.use("/api/verify", centerVerifyRouter);
+
 
 
 const port = process.env.PORT || 3000;

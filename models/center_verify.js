@@ -21,6 +21,11 @@ const centerVerifySchema = new mongoose.Schema({
     ownerEmail : {
       type: String
     },
+    status: {
+      type: String,
+      enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE , DATABASE.STATUS.PENDING],
+      default: DATABASE.STATUS.PENDING
+    },
     createdAt: {
         type: Date,
         default: Date.now,
