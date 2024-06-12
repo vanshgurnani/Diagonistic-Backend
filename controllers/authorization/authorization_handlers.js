@@ -234,7 +234,7 @@ module.exports.getProfileController = async (req, res) => {
         if (!userProfile) {
             
             const centerProfile = await dbUtils.findOne(
-                {ownerEmail: email},
+                {email: email},
                 DATABASE_COLLECTIONS.CENTER
             );
 
