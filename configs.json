@@ -24,6 +24,11 @@
             "USER": "USER",
             "PATIENT": "PATIENT",
             "CENTER": "CENTER"
+        },
+
+        "AVAILABLE": {
+            "YES": "YES",
+            "NO": "NO"
         }
     },
     "JWT_SECRET": "reierjuoreitn",

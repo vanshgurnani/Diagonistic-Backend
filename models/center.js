@@ -64,6 +64,11 @@ const centerSchema = new mongoose.Schema({
     otp: {
       type: String
     },
+    available: {
+      type: String,
+      enum: [DATABASE.AVAILABLE.YES , DATABASE.AVAILABLE.NO],
+      default: DATABASE.AVAILABLE.NO
+    },
     status: {
       type: String,
       enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE , DATABASE.STATUS.PENDING],

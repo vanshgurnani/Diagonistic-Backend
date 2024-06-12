@@ -42,6 +42,8 @@ router.post('/otp', Center.sendCenterOtp);
 
 router.post('/', uploadFields , Center.createCenter);
 router.get('/', Center.getCenter);
+router.put('/', uploadFields , Center.updateCenter);
+
 
 router.post('/login', Center.loginHandler);
 
