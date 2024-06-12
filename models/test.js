@@ -4,6 +4,13 @@ const DATABASE = configs.CONSTANTS;
 
 // Define schema for Test document
 const testSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    lowercase: true,
+    trim: true,
+    match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
+  },
   TestName: {
     type: String,
     default : ''

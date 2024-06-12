@@ -7,7 +7,12 @@ const bookingSchema = new mongoose.Schema({
         type: String
     },
     patientEmail : {
-        type : String
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+        match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
     },
     phoneNumber: {
         type: String
