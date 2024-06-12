@@ -69,13 +69,37 @@ module.exports.createCenter = async(req,res) =>{
             otp
         } = payload;
 
-        const storedOtp = await dbUtils.findOne({ email: ownerEmail }, DATABASE_COLLECTIONS.CENTER_OTPS);
+        const pipline = [
+          {
+              $match: {
+                  email: ownerEmail,
+              },
+          },
+          {
+              $sort: { createdAt: -1 },
+          },
+          {
+              $limit: 1,
+          },
+      ];
+
+      const storedOtp = await dbUtils.aggregate(
+        pipline,
+        DATABASE_COLLECTIONS.CENTER_OTPS
+    );
+
+
+        console.log(storedOtp);
+
+        console.log(storedOtp[0].otp);
+
+        console.log(otp);
 
         if (!storedOtp) {
             return res.status(400).json({ error: "OTP not found or expired." });
         }
 
-        if (storedOtp.otp !== otp) {
+        if (storedOtp[0].otp !== otp) {
             return res.status(400).json({ error: "Invalid OTP." });
         }
 
