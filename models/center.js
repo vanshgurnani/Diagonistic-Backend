@@ -27,6 +27,10 @@ const centerSchema = new mongoose.Schema({
     ownerContact : {
       type: String
     },
+    type: {
+      type: String,
+      default: DATABASE.ROLES.CENTER
+    },
     centerGST: {
       type: Number
     },
