@@ -3,28 +3,28 @@ const configs = require("../configs.json");
 const DATABASE = configs.CONSTANTS;
 
 const centerSchema = new mongoose.Schema({
-    centerName: {
+    name: {
       type: String
     },
-    centerContact: {
-      type: String
-    },
-    centerEmail: {
+    contact: {
       type: String
     },
     centerImg: {
       type: String
     },
+    email : {
+      type: String
+    },
     password: {
       type: String
     },
-    ownerName : {
+    firstName : {
+      type: String
+    },
+    lastName : {
       type: String
     },
     ownerContact : {
-      type: String
-    },
-    ownerEmail : {
       type: String
     },
     centerGST: {
@@ -65,11 +65,6 @@ const centerSchema = new mongoose.Schema({
       enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE , DATABASE.STATUS.PENDING],
       default: DATABASE.STATUS.PENDING
     },
-    FeaturedTests: [{
-      TestName: String,
-      Category: String,
-      rate: Number
-    }],
     createdAt: {
         type: Date,
         default: Date.now,

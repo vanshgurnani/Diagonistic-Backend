@@ -220,27 +220,30 @@ module.exports.getProfileController = async (req, res) => {
     try {
         // Extract user ID from request parameters
 
-        const id = req.decodedToken.id;
+        const email = req.decodedToken.email;
 
-        console.log(id);
-
-        const userId = await dbUtils.convertStringIdToMongooId(id);
+        console.log(email);
 
         // Fetch user profile from the database using the user ID
         const userProfile = await dbUtils.findOne(
-            userId,
+            {email : email},
             DATABASE_COLLECTIONS.USERS
         );
 
         // Check if user profile exists
         if (!userProfile) {
-            return res
-                .status(404)
-                .json({ type: "Error", message: "User profile not found." });
+            
+            const centerProfile = await dbUtils.findOne(
+                {ownerEmail: email},
+                DATABASE_COLLECTIONS.CENTER
+            );
+
+            return res.status(200).json({ type: "Success", centerProfile });
+
         }
 
         // Return user profile in the response
-        res.status(200).json({ type: "Success", userProfile });
+        return res.status(200).json({ type: "Success", userProfile });
     } catch (error) {
         console.error(`[getProfileController] Error occurred: ${error}`);
         res.status(500).json({

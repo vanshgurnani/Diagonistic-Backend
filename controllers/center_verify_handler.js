@@ -3,7 +3,6 @@ const commonUtils = require("../utils/common");
 const configs = require("../configs.json");
 const s3Utils = require("../utils/s3");
 const emailService = require("../services/email_service");
-const jwtService = require("../services/jwt_center");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
 
 module.exports.getCenterVerify = async (req, res) => {

@@ -12,7 +12,10 @@ const centerVerifySchema = new mongoose.Schema({
     centerEmail: {
       type: String
     },
-    ownerName : {
+    ownerFirstName : {
+      type: String
+    },
+    ownerLastName : {
       type: String
     },
     ownerContact : {

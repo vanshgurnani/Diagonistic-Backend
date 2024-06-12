@@ -3,15 +3,15 @@ const commonUtils = require("../utils/common");
 const configs = require("../configs.json");
 const s3Utils = require("../utils/s3");
 const emailService = require("../services/email_service");
-const jwtService = require("../services/jwt_center");
+const jwtService = require("../services/jwt");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
 
 module.exports.sendCenterOtp = async (req, res) => {
   try {
-      const { centerEmail } = req.body;
+      const { email } = req.body;
 
       // Check if the center email is provided
-      if (!centerEmail) {
+      if (!email) {
           return res.status(400).json({ error: "Center email is required." });
       }
 
@@ -19,14 +19,14 @@ module.exports.sendCenterOtp = async (req, res) => {
       const otpNumber = commonUtils.generateRandomOtp(configs.OTP_LENGTH);
 
       // Save OTP to the database or any other storage
-      await dbUtils.create({ email: centerEmail, otp: otpNumber }, DATABASE_COLLECTIONS.CENTER_OTPS);
+      await dbUtils.create({ email: email, otp: otpNumber }, DATABASE_COLLECTIONS.CENTER_OTPS);
 
       // Send OTP via email (You can customize this according to your requirement)
       const emailSubject = "OTP for Center Registration";
       const emailText = `Your OTP for registration is: ${otpNumber}`;
       const emailHtml = `<p>Your OTP for registration is: <strong>${otpNumber}</strong></p>`;
 
-      await emailService.sendMail(centerEmail, emailSubject, emailText, emailHtml);
+      await emailService.sendMail(email, emailSubject, emailText, emailHtml);
 
       res.status(200).json({ message: "OTP sent successfully." });
   } catch (error) {
@@ -39,13 +39,13 @@ module.exports.createCenter = async(req,res) =>{
     try{       
         
         const requiredFields = [
-            { property: "centerName", optional: true },
-            { property: "centerContact", optional: true },
-            { property: "centerEmail", optional: true },
+            { property: "name", optional: true },
+            { property: "contact", optional: true },
+            { property: "email", optional: true },
             { property: "password", optional: true },
-            { property: "ownerName", optional: true },
+            { property: "firstName", optional: true },
+            { property: "lastName", optional: true },
             { property: "ownerContact", optional: true },
-            { property: "ownerEmail", optional: true },
             { property: "centerGST", optional: false },
             { property: "address", optional: false },
             { property: "staffNumber", optional: false },
@@ -56,13 +56,13 @@ module.exports.createCenter = async(req,res) =>{
 
         const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
 
-        const { centerName,
-            centerContact,
-            centerEmail, 
+        const { name,
+            contact,
+            email, 
             password,
-            ownerName,
+            firstName,
+            lastName,
             ownerContact,
-            ownerEmail,
             centerGST,
             address,
             staffNumber,
@@ -72,7 +72,7 @@ module.exports.createCenter = async(req,res) =>{
         const pipline = [
           {
               $match: {
-                  email: ownerEmail,
+                  email: email,
               },
           },
           {
@@ -124,13 +124,13 @@ module.exports.createCenter = async(req,res) =>{
         }
 
         const newCenter = {
-            centerName,
-            centerContact,
-            centerEmail, 
+            name,
+            contact,
+            email, 
             password,
-            ownerName,
+            firstName,
+            lastName,
             ownerContact,
-            ownerEmail,
             centerGST,
             address,
             staffNumber,
@@ -147,12 +147,12 @@ module.exports.createCenter = async(req,res) =>{
         const center = await dbUtils.create(newCenter, DATABASE_COLLECTIONS.CENTER);
 
         const newCenterVerify = {
-          centerName,
-          centerContact,
-          centerEmail,
-          ownerName,
-          ownerContact,
-          ownerEmail
+          centerName: name,
+          centerContact: contact,
+          ownerFirstName: firstName,
+          ownerLastName: lastName,
+          ownerContact: ownerContact,
+          ownerEmail: email
         }
 
         const centerVerfiy = await dbUtils.create(newCenterVerify, DATABASE_COLLECTIONS.CENTER_VERIFY);
@@ -248,7 +248,7 @@ module.exports.loginHandler = async (req, res) => {
       );
 
       const user = await dbUtils.findOne(
-          { centerEmail: email },
+          { ownerEmail: email },
           DATABASE_COLLECTIONS.CENTER
       );
 
@@ -257,7 +257,10 @@ module.exports.loginHandler = async (req, res) => {
       let accessToken = null;
       if (password === user?.password) {
           accessToken = jwtService.generateToken({
-              email: user.centerEmail
+              email: user.email,
+              firstname: user.firstName,
+              lastname: user.lastName,
+              phonenumber: user.ownerContact
           });
 
           res.status(200).json({
@@ -276,35 +279,3 @@ module.exports.loginHandler = async (req, res) => {
       });
   }
 };
-
-module.exports.centerProfile =  async(req, res) => {
-  try{
-    const email = req.decodedToken.email;
-
-    console.log(email);
-
-    const projection = { password: 0 };
-    // Fetch user profile from the database using the user ID
-    const centerProfile = await dbUtils.findOne(
-        {centerEmail : email},
-        DATABASE_COLLECTIONS.CENTER,
-        projection
-    );
-
-    // Check if user profile exists
-    if (!centerProfile) {
-        return res
-            .status(404)
-            .json({ type: "Error", message: "Center profile not found." });
-    }
-
-    // Return user profile in the response
-    res.status(200).json({ type: "Success", centerProfile });
-  }
-  catch (error) {
-    console.log(`[centerProfileHandler] Error occurred: ${error}`);
-    res.status(500).json({
-        error: error.message,
-    });
-  }
-}
