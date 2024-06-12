@@ -25,12 +25,17 @@ const EXPRESS_SESSION_CONFIGS = {
 const app = express();
 app.use(session(EXPRESS_SESSION_CONFIGS));
 
+const allowedOrigins = [
+    "https://diagnostic-frontend.vercel.app",
+    "http://localhost:5173"
+];
+
 // Add this middleware to your server configuration
 app.use((req, res, next) => {
-    res.setHeader(
-        "Access-Control-Allow-Origin",
-        "https://diagnostic-frontend.vercel.app"
-    );
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
     res.setHeader(
         "Access-Control-Allow-Methods",
         "GET, POST, OPTIONS, PUT, PATCH, DELETE"
