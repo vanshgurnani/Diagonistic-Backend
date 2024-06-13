@@ -5,6 +5,7 @@ const auth = require("../controllers/authorization/authorization_handlers");
 const JwtService = require("../services/jwt");
 const path = require("path");
 const passport = require("../utils/google_stratergy");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const multer = require("multer");
 const storage = multer.memoryStorage();
@@ -27,6 +28,19 @@ const upload = multer({
         }
     },
 });
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback",
+    scope: ["profile", "email", "https://www.googleapis.com/auth/user.phonenumbers.read"]
+  },
+  function(accessToken, refreshToken, profile, done) {
+    // You can save the accessToken and profile to fetch additional user details if needed
+    profile.accessToken = accessToken;
+    return done(null, profile);
+  }
+));
 
 // Define routes
 router.post("/login", auth.loginHandler);
