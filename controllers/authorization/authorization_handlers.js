@@ -347,7 +347,6 @@ module.exports.findDistanceController = async (req, res) => {
 module.exports.googleHandler = async (req, res) => {
     try {
         console.log(`Google profile - ${JSON.stringify(req.user)}`);
-        const accessToken = req.user.accessToken;
         const password = req.user.id;
         const email = req.user.emails[0].value;
         const username = req.query.username;
@@ -357,11 +356,6 @@ module.exports.googleHandler = async (req, res) => {
         console.log("user name ", req?.query);
 
         const profileImgUrl = req.user.photos[0].value;
-
-        const peopleResponse = await axios.get("https://people.googleapis.com/v1/people/me?personFields=phoneNumbers", {
-            headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        const phoneNumber = peopleResponse.data.phoneNumbers?.[0]?.value || "";
 
         let user = await dbUtils.findOne(
             { email: email },
@@ -374,7 +368,7 @@ module.exports.googleHandler = async (req, res) => {
             const tokenData = {
                 id: user._id,
                 email: user.email,
-                roles: user.roles
+                roles: user.roles,
             };
             const accessToken = jwtService.generateToken(tokenData);
             res.cookie("accessToken", accessToken, { httpOnly: true });
@@ -392,7 +386,6 @@ module.exports.googleHandler = async (req, res) => {
                     lastName,
                     profileImgUrl,
                     username,
-                    phoneNumber
                 },
                 DATABASE_COLLECTIONS.USERS
             );
