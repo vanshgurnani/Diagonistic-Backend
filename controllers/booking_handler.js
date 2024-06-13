@@ -124,19 +124,16 @@ module.exports.getBooking = async (req, res) => {
 
 module.exports.updateBooking = async (req, res) => {
     try {
-        const bookingId = req.params.id; // Get booking ID from request parameters
+        const bookingId = req.body.id; // Get booking ID from request parameters
         const updates = req.body; // Get updates from request body
+
+        console.log(bookingId);
 
         // Update the booking record in the database
         const result = await dbUtils.updateOne({ _id: bookingId }, updates, DATABASE_COLLECTIONS.BOOKING);
+        
 
-        if (result && result.nModified > 0) {
-            // If at least one document was modified, send success response
-            res.status(200).json({ type: 'Success', message: "Booking updated successfully." });
-        } else {
-            // If no document was modified, it means booking not found
-            res.status(404).json({ type: 'Error', message: "Booking not found." });
-        }
+        res.status(200).json({ type: 'Success', message: "Booking updated successfully." });
     } catch (error) {
         console.error(`[updateBooking] Error occurred: ${error}`);
         res.status(500).json({ type: 'Error', message: "Failed to update booking." });

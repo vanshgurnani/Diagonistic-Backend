@@ -27,7 +27,7 @@ const upload = multer({
 
 router.post('/', JwtService.validateJwt, Book.createBooking);
 router.get('/', Book.getBooking);
-router.put('/', JwtService.validateJwt, Book.updateBooking);
+router.put('/', Book.updateBooking);
 router.delete('/', JwtService.validateJwt, Book.deleteBooking);
 
 router.post('/upload', JwtService.validateJwt, upload.fields([{ name: 'files', maxCount: 5 }]), Book.uploadFilesAndUpdateBooking);
