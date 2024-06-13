@@ -153,17 +153,6 @@ module.exports.createCenter = async(req,res) =>{
 
         const center = await dbUtils.create(newCenter, DATABASE_COLLECTIONS.CENTER);
 
-        const newCenterVerify = {
-          centerName: name,
-          centerContact: contact,
-          ownerFirstName: firstName,
-          ownerLastName: lastName,
-          ownerContact: ownerContact,
-          ownerEmail: email
-        }
-
-        const centerVerfiy = await dbUtils.create(newCenterVerify, DATABASE_COLLECTIONS.CENTER_VERIFY);
-
         res.status(200).json({ type: "success" ,  center , centerVerfiy });
     }
     catch(error){

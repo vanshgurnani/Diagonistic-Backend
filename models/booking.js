@@ -3,6 +3,9 @@ const configs = require("../configs.json");
 const DATABASE = configs.CONSTANTS;
 
 const bookingSchema = new mongoose.Schema({
+    centerEmail: {
+        type: String
+    },
     patientName: {
         type: String
     },
