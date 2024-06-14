@@ -145,12 +145,12 @@ module.exports.getAllTest = async (req, res) => {
 module.exports.updateTest = async (req, res) => {
     try {
       // Extract test ID from request parameters
-      const name = req.body;
+      const id = req.body;
       // Extract update fields from request body
       const updateFields = { ...req.body };
   
       // Execute the update operation
-      const result = await dbUtils.updateOne({ TestName: name }, { $set: updateFields }, DATABASE_COLLECTIONS.TEST);
+      const result = await dbUtils.updateOne({ _id: id }, { $set: updateFields }, DATABASE_COLLECTIONS.TEST);
   
       res.status(200).json({ type: 'Success', message: "Test updated successfully", result });
     } catch (error) {
