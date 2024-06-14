@@ -22,7 +22,7 @@ module.exports.createBooking =  async(req,res) =>{
 
         const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
 
-        const { testName , preferredDoctorName} = payload;
+        const { testName , preferredDoctorName , centerEmail} = payload;
 
         const newBooking = {
             patientName : fullname,
