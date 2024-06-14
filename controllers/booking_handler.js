@@ -15,6 +15,7 @@ module.exports.createBooking =  async(req,res) =>{
         console.log(fullname , phonenumber);
 
         const requiredFields = [
+            { property: "centerEmail", optional: true },
             { property: "testName", optional: true },
             { property: "preferredDoctorName", optional: true }
         ];
@@ -27,6 +28,7 @@ module.exports.createBooking =  async(req,res) =>{
             patientName : fullname,
             phoneNumber : phonenumber,
             patientEmail : email, 
+            centerEmail ,
             testName ,
             preferredDoctorName ,
 
@@ -55,6 +57,7 @@ module.exports.getBooking = async (req, res) => {
       // Define projection to include only necessary fields
       const projection = {
         _id: 1,
+        centerEmail: 1,
         patientName: 1,
         patientEmail: 1,
         phoneNumber: 1,

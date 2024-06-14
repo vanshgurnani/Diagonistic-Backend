@@ -42,7 +42,7 @@ const testSchema = new mongoose.Schema({
           DATABASE.STATUS.VISITED,
           DATABASE.STATUS.PENDING,
       ],
-      default: DATABASE.STATUS.PENDING,
+      default: DATABASE.STATUS.PUBLISHED,
   } ,
   createdAt: {
     type: Date,
