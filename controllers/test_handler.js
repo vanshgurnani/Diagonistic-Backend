@@ -54,8 +54,11 @@ module.exports.createTest = async (req, res) => {
 
 module.exports.getAllTest = async (req, res) => {
     try {
+        // Extract email from the token
+        const email = req.decodedToken.email;
+
         // Extract filter, sort, limit, and page from the request query
-        const filter = req?.query?.filter ? req.query.filter : {};
+        const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
         const sort = req?.query?.sort ? JSON.parse(req.query.sort) : {};
         const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
         const page = req?.query?.page ? parseInt(req.query.page) : 1;
@@ -66,11 +69,16 @@ module.exports.getAllTest = async (req, res) => {
         const pipeline = [
             {
                 $match: {
-                    $or: [
-                        { TestName: { $regex: searchQuery, $options: "i" } },
-                        { Category: { $regex: searchQuery, $options: "i" } }
-                    ],
-                    ...filter
+                    $and: [
+                        { email: email },
+                        {
+                            $or: [
+                                { TestName: { $regex: searchQuery, $options: "i" } },
+                                { Category: { $regex: searchQuery, $options: "i" } }
+                            ]
+                        },
+                        ...Object.entries(filter).map(([key, value]) => ({ [key]: value }))
+                    ]
                 }
             },
             { $skip: skip },
@@ -80,11 +88,20 @@ module.exports.getAllTest = async (req, res) => {
                     _id: 1, 
                     email: 1,
                     TestName: 1,
-                    Category: 1 , 
-                    rate : 1 , 
-                    discount : 1 , 
-                    finalPrice : 1,
-                    action : 1
+                    Category: 1, 
+                    rate: 1, 
+                    discount: 1, 
+                    finalPrice: 1,
+                    action: 1
+                }
+            }
+        ];
+
+        // Pipeline for distinct categories
+        const categoryPipeline = [
+            {
+                $match: {
+                    email: email
                 }
             },
             {
@@ -101,17 +118,29 @@ module.exports.getAllTest = async (req, res) => {
         ];
 
         // Execute the aggregate query
-        const [test, distinctCategories] = await Promise.all([
-            dbUtils.aggregate(pipeline.slice(0, -2), DATABASE_COLLECTIONS.TEST), // Execute without the distinct categories stage
-            dbUtils.aggregate(pipeline.slice(-2), DATABASE_COLLECTIONS.TEST) // Execute only the distinct categories stage
+        const [test, distinctCategories, totalCount] = await Promise.all([
+            dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.TEST), // Execute with the email filter
+            dbUtils.aggregate(categoryPipeline, DATABASE_COLLECTIONS.TEST), // Execute only the distinct categories stage
+            dbUtils.countDocuments(pipeline, DATABASE_COLLECTIONS.TEST)
         ]);
 
-        res.status(200).json({ type: 'Success', test, distinctCategories });
+        const totalPages = Math.ceil(totalCount/limit)
+
+        res.status(200).json({ 
+            type: 'Success',
+            page,
+            limit,
+            totalCount,
+            totalPages, 
+            test, 
+            distinctCategories 
+        });
     } catch (error) {
         console.error(`[TestController] Error occurred: ${error}`);
-        res.status(500).json({ type: 'Error', message: "Failed to fetch test." });
+        res.status(500).json({ type: 'Error', message: "Failed to fetch tests." });
     }
 };
+
 
 module.exports.updateTest = async (req, res) => {
     try {

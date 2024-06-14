@@ -25,7 +25,7 @@ const upload = multer({
 
 // Routes
 router.post('/', jwtService.validateJwt, Test.createTest);
-router.get('/', Test.getAllTest);
+router.get('/', jwtService.validateJwt , Test.getAllTest);
 router.put('/', Test.updateTest);
 router.delete('/', Test.deleteTest);
 
