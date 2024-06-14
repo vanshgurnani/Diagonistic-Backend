@@ -9,7 +9,8 @@ const fileFilter = (req, file, cb) => {
     if (
         file.mimetype === 'text/csv' ||
         file.mimetype === 'application/vnd.ms-excel' ||
-        file.mimetype === 'application/octet-stream'
+        file.mimetype === 'application/octet-stream' ||
+        file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ) {
         cb(null, true); // Accept the file
     } else {
