@@ -230,6 +230,11 @@ module.exports.getProfileController = async (req, res) => {
             DATABASE_COLLECTIONS.USERS
         );
 
+        const userTest = await dbUtils.findMany(
+            {patientEmail: email},
+            DATABASE_COLLECTIONS.ORDERED_TEST
+        );
+
         // Check if user profile exists
         if (!userProfile) {
             
@@ -243,7 +248,7 @@ module.exports.getProfileController = async (req, res) => {
         }
 
         // Return user profile in the response
-        return res.status(200).json({ type: "Success", userProfile });
+        return res.status(200).json({ type: "Success", userProfile, userTest });
     } catch (error) {
         console.error(`[getProfileController] Error occurred: ${error}`);
         res.status(500).json({

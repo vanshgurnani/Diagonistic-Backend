@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const configs = require("../configs.json");
 const DATABASE = configs.CONSTANTS;
 
-const bookingSchema = new mongoose.Schema({
+
+const orderedSchema = new mongoose.Schema({
     centerEmail: {
         type: String
     },
@@ -16,9 +17,6 @@ const bookingSchema = new mongoose.Schema({
         trim: true,
         match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
     },
-    phoneNumber: {
-        type: String
-    },
     appointmentDateTime: {
         type: Date,
         default: Date.now
@@ -26,23 +24,11 @@ const bookingSchema = new mongoose.Schema({
     testName: {
         type: String
     },
-    preferredDoctorName: {
+    status: {
         type: String,
-        default: "NULL"
+        enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE],
+        default: DATABASE.STATUS.ACTIVE
     },
-    payementId: {
-        type: String,
-        default: "NULL"
-    },
-    action: {
-        type: String,
-        enum: [DATABASE.STATUS.ACCEPTED , DATABASE.STATUS.REJECTED , DATABASE.STATUS.PENDING], // Possible actions for the booking
-        default: DATABASE.STATUS.PENDING
-    } ,   
-    report : {
-        type : [String],
-        default: []
-    } ,
     createdAt: {
         type: Date,
         default: Date.now,
@@ -63,5 +49,5 @@ const bookingSchema = new mongoose.Schema({
     }
 });
 
-const Book = mongoose.model(DATABASE.DATABASE_COLLECTIONS.BOOKING , bookingSchema);
-module.exports = Book;
+const order = mongoose.model(DATABASE.DATABASE_COLLECTIONS.ORDERED_TEST , orderedSchema);
+module.exports = order;

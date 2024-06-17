@@ -34,9 +34,18 @@ module.exports.createBooking =  async(req,res) =>{
 
         }
 
+        const newOrder = {
+          centerEmail: centerEmail,
+          patientName: fullname,
+          patientEmail: email,
+          testName: testName
+        }
+
         const Booking = await dbUtils.create(newBooking, DATABASE_COLLECTIONS.BOOKING);
 
-        res.status(200).json({ type: "success" ,  Booking });
+        const order = await dbUtils.create(newOrder, DATABASE_COLLECTIONS.ORDERED_TEST);
+
+        res.status(200).json({ type: "success" ,  Booking , order });
 
     }
     catch(error){

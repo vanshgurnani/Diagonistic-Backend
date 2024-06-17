@@ -163,73 +163,91 @@ module.exports.createCenter = async(req,res) =>{
 
 module.exports.getCenter = async (req, res) => {
     try {
-      // Extract filter, sort, limit, and page from the request query
-      const filter = req?.query?.filter ? req.query.filter : {};
-      const sort = req?.query?.sort ? JSON.parse(req.query.sort) : { createdAt: -1 };
-      const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
-      const page = req?.query?.page ? parseInt(req.query.page) : 1;
-      const skip = (page - 1) * limit;
-  
-      // Define projection to include only necessary fields
-      const projection = {
-        password: 0
-      };
-  
-      // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
-      const pipeline = [
-        {
-          $match: filter
-        },
-        {
-          $facet: {
-            totalCount: [{ $count: "total" }],
-            data: [
-              { $sort: sort },
-              { $skip: skip },
-              { $limit: limit },
-              { $project: projection } // Projection step
-            ]
-          }
-        },
-        { $unwind: "$totalCount" },
-        {
-          $project: {
-            totalCount: "$totalCount.total",
-            centerData: "$data"
-          }
+        // Extract filter, sort, limit, page, testName, and address from the request query
+        const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
+        const sort = req?.query?.sort ? JSON.parse(req.query.sort) : { createdAt: -1 };
+        const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
+        const page = req?.query?.page ? parseInt(req.query.page) : 1;
+        const skip = (page - 1) * limit;
+        const testName = req?.query?.testName || '';
+        const address = req?.query?.address || '';
+
+        // Add address filter if provided
+        if (address) {
+            filter.address = new RegExp(address, 'i');
         }
-      ];
-  
-      // Execute the aggregate query
-      let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
-  
-      // Check if any bookings are found
-      if (!result || !result.length) {
-        result = [
-          {
-            totalCount: 0,
-            centerData: []
-          }
+
+        // Define projection to include only necessary fields
+        const projection = {
+            password: 0
+        };
+
+        // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
+        const pipeline = [
+            {
+                $match: filter
+            },
+            {
+                $lookup: {
+                    from: 'tests', // The collection name for tests
+                    localField: 'email', // The local field to match
+                    foreignField: 'email', // The foreign field to match
+                    as: 'testDetails', // The name of the array field to add
+                    pipeline: [
+                        { $match: { TestName: new RegExp(testName, 'i') } },
+                        { $sort: { createdAt: -1 } },
+                        { $limit: limit },
+                        {
+                            $project: {
+                                _id: 0,
+                                TestName: 1,
+                                finalPrice: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $match: {
+                    $or: [
+                        { 'testDetails': { $ne: [] } }, // Centers with matching test details
+                        { 'testDetails': { $exists: false } } // Centers without test details
+                    ]
+                }
+            },
+            { $sort: sort },
+            { $project: projection }
         ];
-      }
-  
-      const totalDocumentCount = result[0].totalCount;
-      const totalPages = Math.ceil(totalDocumentCount / limit);
-  
-      // Send Success response with bookings data
-      res.status(200).json({
-        type: 'Success',
-        page,
-        limit,
-        totalPages,
-        totalCount: result[0].totalCount,
-        center: result[0].centerData
-      });
+
+        // Execute the aggregate query
+        let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
+
+        // If no testName provided, count all documents
+        const countFilter = Object.keys(filter).length ? {
+            ...filter,
+            'testDetails.TestName': new RegExp(testName, 'i')
+        } : {};
+        
+        // Count the total documents that match the filter
+        const totalDocumentCount = await dbUtils.countDocuments(countFilter, DATABASE_COLLECTIONS.CENTER);
+
+        // Send Success response with center data
+        res.status(200).json({
+            type: 'Success',
+            page,
+            limit,
+            totalPages: Math.ceil(totalDocumentCount / limit),
+            totalCount: totalDocumentCount,
+            center: result
+        });
+
     } catch (error) {
-      console.error(`[getCenter] Error occurred: ${error}`);
-      res.status(500).json({ type: 'Error', message: "Internal server error." });
+        console.error(`[getCenter] Error occurred: ${error}`);
+        res.status(500).json({ type: 'Error', message: "Internal server error." });
     }
 };
+
+
 
 module.exports.loginHandler = async (req, res) => {
   try {

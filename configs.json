@@ -8,7 +8,8 @@
             "CENTER" : "center",
             "BOOKING" : "booking",
             "CENTER_OTPS": "center-otp",
-            "CENTER_VERIFY": "center-verify"
+            "CENTER_VERIFY": "center-verify",
+            "ORDERED_TEST": "ordered-test"
         },
         "STATUS": {
             "ACTIVE": "ACTIVE",
