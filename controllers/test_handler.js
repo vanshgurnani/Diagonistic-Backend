@@ -271,7 +271,7 @@ module.exports.getAllTest = async (req, res) => {
                 }
             },
             { $skip: skip },
-            { $limit: limit },
+            // { $limit: limit },
             {
                 $project: {
                     _id: 1, 
@@ -313,7 +313,6 @@ module.exports.getAllTest = async (req, res) => {
         res.status(200).json({ 
             type: 'Success',
             page,
-            limit,
             totalCount,
             totalPages, 
             test, 
