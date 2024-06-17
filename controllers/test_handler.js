@@ -52,7 +52,7 @@ module.exports.createTest = async (req, res) => {
 };
   
 
-module.exports.getAllTest = async (req, res) => {
+module.exports.getTest = async (req, res) => {
     try {
         // Extract email from the token
         const email = req.decodedToken.email;
@@ -243,5 +243,86 @@ module.exports.createBulkTests = async (req, res) => {
     }
 };
 
+
+module.exports.getAllTest = async (req, res) => {
+    try {
+
+        // Extract filter, sort, limit, and page from the request query
+        const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
+        const sort = req?.query?.sort ? JSON.parse(req.query.sort) : {};
+        const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
+        const page = req?.query?.page ? parseInt(req.query.page) : 1;
+        const skip = (page - 1) * limit;
+        const searchQuery = req.query.searchQuery ? req.query.searchQuery : "";
+
+        // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
+        const pipeline = [
+            {
+                $match: {
+                    $and: [
+                        {
+                            $or: [
+                                { TestName: { $regex: searchQuery, $options: "i" } },
+                                { Category: { $regex: searchQuery, $options: "i" } }
+                            ]
+                        },
+                        ...Object.entries(filter).map(([key, value]) => ({ [key]: value }))
+                    ]
+                }
+            },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $project: {
+                    _id: 1, 
+                    email: 1,
+                    TestName: 1,
+                    Category: 1, 
+                    rate: 1, 
+                    discount: 1, 
+                    finalPrice: 1,
+                    action: 1
+                }
+            }
+        ];
+
+        // Pipeline for distinct categories
+        const categoryPipeline = [
+            {
+                $group: {
+                    _id: "$Category"
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    Category: "$_id"
+                }
+            }
+        ];
+
+        // Execute the aggregate query
+        const [test, distinctCategories, totalCount] = await Promise.all([
+            dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.TEST), // Execute with the email filter
+            dbUtils.aggregate(categoryPipeline, DATABASE_COLLECTIONS.TEST), // Execute only the distinct categories stage
+            dbUtils.countDocuments(pipeline, DATABASE_COLLECTIONS.TEST)
+        ]);
+
+        const totalPages = Math.ceil(totalCount/limit)
+
+        res.status(200).json({ 
+            type: 'Success',
+            page,
+            limit,
+            totalCount,
+            totalPages, 
+            test, 
+            distinctCategories 
+        });
+    } catch (error) {
+        console.error(`[TestController] Error occurred: ${error}`);
+        res.status(500).json({ type: 'Error', message: "Failed to fetch tests." });
+    }
+};
 
 

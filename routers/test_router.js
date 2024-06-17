@@ -26,11 +26,13 @@ const upload = multer({
 
 // Routes
 router.post('/', jwtService.validateJwt, Test.createTest);
-router.get('/', jwtService.validateJwt , Test.getAllTest);
+router.get('/', jwtService.validateJwt , Test.getTest);
 router.put('/', Test.updateTest);
 router.delete('/', Test.deleteTest);
 
 // Ensure jwt validation middleware runs before file upload middleware
 router.post('/bulk', jwtService.validateJwt, upload.single('file'), Test.createBulkTests);
+
+router.get('/all', Test.getAllTest);
 
 module.exports = router;
