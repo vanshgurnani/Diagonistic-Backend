@@ -17,12 +17,16 @@ module.exports.createBooking =  async(req,res) =>{
         const requiredFields = [
             { property: "centerEmail", optional: true },
             { property: "testName", optional: true },
-            { property: "preferredDoctorName", optional: true }
+            { property: "preferredDoctorName", optional: true },
+            { property: "rate", optional: true },
+            { property: "timeSlot", optional: true },
+            
+
         ];
 
         const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
 
-        const { testName , preferredDoctorName , centerEmail} = payload;
+        const { testName , preferredDoctorName , centerEmail, rate ,timeSlot } = payload;
 
         const newBooking = {
             patientName : fullname,
@@ -31,6 +35,8 @@ module.exports.createBooking =  async(req,res) =>{
             centerEmail ,
             testName ,
             preferredDoctorName ,
+            rate ,
+            timeSlot
 
         }
 
@@ -63,21 +69,6 @@ module.exports.getBooking = async (req, res) => {
       const page = req?.query?.page ? parseInt(req.query.page) : 1;
       const skip = (page - 1) * limit;
   
-      // Define projection to include only necessary fields
-      const projection = {
-        _id: 1,
-        centerEmail: 1,
-        patientName: 1,
-        patientEmail: 1,
-        phoneNumber: 1,
-        appointmentDateTime: 1,
-        testName: 1,
-        preferredDoctorName: 1,
-        payementId: 1,
-        action: 1,
-        createdAt: 1
-      };
-  
       // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
       const pipeline = [
         {
@@ -89,8 +80,7 @@ module.exports.getBooking = async (req, res) => {
             data: [
               { $sort: sort },
               { $skip: skip },
-              { $limit: limit },
-              { $project: projection } // Projection step
+              { $limit: limit }
             ]
           }
         },

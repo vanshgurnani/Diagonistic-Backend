@@ -26,6 +26,12 @@ const bookingSchema = new mongoose.Schema({
     testName: {
         type: String
     },
+    rate: {
+        type: Number
+    },
+    timeSlot: {
+        type: Date
+    },
     preferredDoctorName: {
         type: String,
         default: "NULL"
