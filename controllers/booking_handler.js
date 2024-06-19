@@ -62,6 +62,9 @@ module.exports.createBooking =  async(req,res) =>{
 
 module.exports.getBooking = async (req, res) => {
     try {
+
+      const email = req.decodedToken.email;
+
       // Extract filter, sort, limit, and page from the request query
       const filter = req?.query?.filter ? req.query.filter : {};
       const sort = req?.query?.sort ? JSON.parse(req.query.sort) : { createdAt: -1 };
@@ -72,7 +75,7 @@ module.exports.getBooking = async (req, res) => {
       // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
       const pipeline = [
         {
-          $match: filter
+          $match: {...filter , centerEmail: email}
         },
         {
           $facet: {

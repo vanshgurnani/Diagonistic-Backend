@@ -26,7 +26,7 @@ const upload = multer({
 });
 
 router.post('/', JwtService.validateJwt, Book.createBooking);
-router.get('/', Book.getBooking);
+router.get('/', JwtService.validateJwt , Book.getBooking);
 router.put('/', Book.updateBooking);
 router.delete('/', JwtService.validateJwt, Book.deleteBooking);
 
