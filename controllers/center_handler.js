@@ -39,7 +39,7 @@ module.exports.createCenter = async(req,res) =>{
     try{       
         
         const requiredFields = [
-            { property: "name", optional: true },
+            { property: "centerName", optional: true },
             { property: "contact", optional: true },
             { property: "email", optional: true },
             { property: "password", optional: true },
@@ -56,7 +56,7 @@ module.exports.createCenter = async(req,res) =>{
 
         const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
 
-        const { name,
+        const { centerName,
             contact,
             email, 
             password,
@@ -131,7 +131,7 @@ module.exports.createCenter = async(req,res) =>{
         }
 
         const newCenter = {
-            name,
+            centerName,
             contact,
             email, 
             password,

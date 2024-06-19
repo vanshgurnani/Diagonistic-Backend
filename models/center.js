@@ -3,7 +3,7 @@ const configs = require("../configs.json");
 const DATABASE = configs.CONSTANTS;
 
 const centerSchema = new mongoose.Schema({
-    name: {
+    centerName: {
       type: String
     },
     contact: {
