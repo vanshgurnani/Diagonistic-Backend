@@ -18,7 +18,9 @@
             "VISITED" : "VISITED" ,
             "PUBLISHED" : "PUBLISHED",
             "ACCEPTED" : "ACCEPTED",
-            "REJECTED" : "REJECTED"
+            "REJECTED" : "REJECTED",
+            "ONGOING": "ONGOING",
+            "PREVIOUS": "PREVIOUS"
         },
 
         "ROLES": {

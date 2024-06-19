@@ -26,8 +26,8 @@ const orderedSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE],
-        default: DATABASE.STATUS.ACTIVE
+        enum: [DATABASE.STATUS.ONGOING , DATABASE.STATUS.PREVIOUS],
+        default: DATABASE.STATUS.ONGOING
     },
     createdAt: {
         type: Date,
