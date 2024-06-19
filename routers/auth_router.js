@@ -40,7 +40,7 @@ router.post("/send-otp", auth.sendOtp);
 router.get("/profile", JwtService.validateJwt, auth.getProfileController);
 router.put(
     "/profile",
-    upload.single("profileImg"),
+    upload.single("profileImgUrl"),
     JwtService.validateJwt,
     auth.updateProfileHandler
 );
