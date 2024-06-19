@@ -275,7 +275,7 @@ module.exports.updateProfileHandler = async (req, res) => {
                 fileName,
                 process.env.AWS_BUCKET_NAME
             );
-            updatedProfileData.profileImgUrl = imageUrl;
+            updatedProfileData.profileImgUrl = imageUrl.Location;
         }
 
         // Define query to find user profile based on userId
