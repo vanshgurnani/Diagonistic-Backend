@@ -4,6 +4,9 @@ const DATABASE = configs.CONSTANTS;
 
 
 const orderedSchema = new mongoose.Schema({
+    bookingId: {
+        type: String
+    },
     centerEmail: {
         type: String
     },

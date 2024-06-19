@@ -3,6 +3,7 @@ const commonUtils = require("../utils/common");
 const configs = require("../configs.json");
 const s3Utils = require("../utils/s3");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
+const DATABASE = configs.CONSTANTS;
 
 module.exports.createBooking =  async(req,res) =>{
     try{
@@ -40,14 +41,16 @@ module.exports.createBooking =  async(req,res) =>{
 
         }
 
+        
+        const Booking = await dbUtils.create(newBooking, DATABASE_COLLECTIONS.BOOKING);
+        
         const newOrder = {
+          bookingId: Booking._id,
           centerEmail: centerEmail,
           patientName: fullname,
           patientEmail: email,
           testName: testName
         }
-
-        const Booking = await dbUtils.create(newBooking, DATABASE_COLLECTIONS.BOOKING);
 
         const order = await dbUtils.create(newOrder, DATABASE_COLLECTIONS.ORDERED_TEST);
 
@@ -152,14 +155,22 @@ module.exports.updateBooking = async (req, res) => {
     try {
         const bookingId = req.body.id; // Get booking ID from request parameters
         const updates = req.body; // Get updates from request body
-
+      
         console.log(bookingId);
 
         // Update the booking record in the database
         const result = await dbUtils.updateOne({ _id: bookingId }, updates, DATABASE_COLLECTIONS.BOOKING);
+
+        if(updates.action === "VISITED") {
+
+          const ordered = await dbUtils.updateOne({ bookingId: bookingId }, { $set: { status: DATABASE.STATUS.PREVIOUS  } }, DATABASE_COLLECTIONS.ORDERED_TEST);
+
+          console.log(`Ordered tests updated: ${ordered}`);
+
+        }
         
 
-        res.status(200).json({ type: 'Success', message: "Booking updated successfully." });
+        res.status(200).json({ type: 'Success', message: "Booking updated successfully.", result});
     } catch (error) {
         console.error(`[updateBooking] Error occurred: ${error}`);
         res.status(500).json({ type: 'Error', message: "Failed to update booking." });
