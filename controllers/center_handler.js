@@ -90,8 +90,14 @@ module.exports.createCenter = async(req,res) =>{
 
         const existingCenter = await dbUtils.findOne({ email: email }, DATABASE_COLLECTIONS.CENTER);
 
+        const existingPatient = await dbUtils.findOne({ email: email }, DATABASE_COLLECTIONS.USERS);
+
         if (existingCenter) {
-            return res.status(400).json({ error: "This Email is already alloted a Center." });
+            return res.status(400).json({type: "error", message: "This Email is already alloted a Center." });
+        }
+
+        if (existingPatient) {
+            return res.status(400).json({type: "error", message: "This Email is already alloted a Patient and you are not authorized to create center." });
         }
 
 
@@ -103,11 +109,11 @@ module.exports.createCenter = async(req,res) =>{
         console.log(otp);
 
         if (!storedOtp) {
-            return res.status(400).json({ error: "OTP not found or expired." });
+            return res.status(400).json({type: "error" , message: "OTP not found or expired." });
         }
 
         if (storedOtp[0].otp !== otp) {
-            return res.status(400).json({ error: "Invalid OTP." });
+            return res.status(400).json({type: "error" , message: "Invalid OTP." });
         }
 
         const uploadedFiles = {
