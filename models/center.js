@@ -32,7 +32,7 @@ const centerSchema = new mongoose.Schema({
     ownerContact : {
       type: String
     },
-    type: {
+    roles: {
       type: String,
       default: DATABASE.ROLES.CENTER
     },
