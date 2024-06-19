@@ -61,70 +61,91 @@ module.exports.createBooking =  async(req,res) =>{
 };
 
 module.exports.getBooking = async (req, res) => {
-    try {
+  try {
+    const email = req.decodedToken.email;
 
-      const email = req.decodedToken.email;
+    // Extract filter, sort, limit, and page from the request query
+    const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
+    const sort = req?.query?.sort ? JSON.parse(req.query.sort) : { createdAt: -1 };
+    const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
+    const page = req?.query?.page ? parseInt(req.query.page) : 1;
+    const skip = (page - 1) * limit;
 
-      // Extract filter, sort, limit, and page from the request query
-      const filter = req?.query?.filter ? req.query.filter : {};
-      const sort = req?.query?.sort ? JSON.parse(req.query.sort) : { createdAt: -1 };
-      const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
-      const page = req?.query?.page ? parseInt(req.query.page) : 1;
-      const skip = (page - 1) * limit;
-  
-      // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
-      const pipeline = [
-        {
-          $match: {...filter , centerEmail: email}
-        },
-        {
-          $facet: {
-            totalCount: [{ $count: "total" }],
-            data: [
-              { $sort: sort },
-              { $skip: skip },
-              { $limit: limit }
-            ]
+    // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
+    const pipeline = [
+      {
+        $match: { ...filter, centerEmail: email }
+      },
+      {
+        $facet: {
+          totalCount: [{ $count: "total" }],
+          data: [
+            { $sort: sort },
+            { $skip: skip },
+            { $limit: limit }
+          ],
+          statusCounts: [
+            {
+              $group: {
+                _id: "$action",
+                count: { $sum: 1 }
+              }
+            }
+          ]
+        }
+      },
+      {
+        $project: {
+          totalCount: { $arrayElemAt: ["$totalCount.total", 0] },
+          bookingData: "$data",
+          statusCounts: {
+            $arrayToObject: {
+              $map: {
+                input: "$statusCounts",
+                as: "status",
+                in: { k: "$$status._id", v: "$$status.count" }
+              }
+            }
           }
-        },
-        { $unwind: "$totalCount" },
+        }
+      }
+    ];
+
+    // Execute the aggregate query
+    let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.BOOKING);
+
+    // Check if any bookings are found
+    if (!result || !result.length) {
+      result = [
         {
-          $project: {
-            totalCount: "$totalCount.total",
-            bookingData: "$data"
+          totalCount: 0,
+          bookingData: [],
+          statusCounts: {
+            ACCEPTED: 0,
+            REJECTED: 0,
+            PENDING: 0
           }
         }
       ];
-  
-      // Execute the aggregate query
-      let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.BOOKING);
-  
-      // Check if any bookings are found
-      if (!result || !result.length) {
-        result = [
-          {
-            totalCount: 0,
-            bookingData: []
-          }
-        ];
-      }
-  
-      const totalDocumentCount = result[0].totalCount;
-      const totalPages = Math.ceil(totalDocumentCount / limit);
-  
-      // Send Success response with bookings data
-      res.status(200).json({
-        type: 'Success',
-        page,
-        limit,
-        totalPages,
-        totalCount: result[0].totalCount,
-        bookings: result[0].bookingData
-      });
-    } catch (error) {
-      console.error(`[getBooking] Error occurred: ${error}`);
-      res.status(500).json({ type: 'Error', message: "Internal server error." });
     }
+
+    const totalDocumentCount = result[0].totalCount;
+    const totalPages = Math.ceil(totalDocumentCount / limit);
+
+    // Send Success response with bookings data
+    res.status(200).json({
+      type: 'Success',
+      page,
+      limit,
+      totalPages,
+      totalCount: result[0].totalCount,
+      statusCounts: result[0].statusCounts,
+      bookings: result[0].bookingData
+    });
+  } catch (error) {
+    console.error(`[getBooking] Error occurred: ${error}`);
+    res.status(500).json({ type: 'Error', message: "Internal server error." });
+  }
 };
 
 module.exports.updateBooking = async (req, res) => {
