@@ -65,7 +65,7 @@ const testSchema = new mongoose.Schema({
 });
 
 testSchema.pre('save', function (next) {
-  if (this.isNew && this.finalPrice === 0) {
+  if (this.isNew) {
     this.finalPrice = this.rate;
   }
   next();
