@@ -205,6 +205,9 @@ module.exports.createBulkTests = async (req, res) => {
         // Parse CSV data from buffer
         parse(fileBuffer.toString(), { columns: true })
             .on('data', (row) => {
+                if (!row.finalPrice) {
+                    row.finalPrice = row.rate;
+                }
                 testData.push(row);
             })
             .on('end', async () => {
