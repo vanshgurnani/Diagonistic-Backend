@@ -64,6 +64,14 @@ const testSchema = new mongoose.Schema({
   }
 });
 
+testSchema.pre('save', function (next) {
+  if (this.isNew && this.finalPrice === 0) {
+    this.finalPrice = this.rate;
+  }
+  next();
+});
+
+
 // Create model from schema
 const Test = mongoose.model(DATABASE.DATABASE_COLLECTIONS.TEST , testSchema);
 module.exports = Test;
