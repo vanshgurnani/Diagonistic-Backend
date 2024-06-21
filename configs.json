@@ -9,7 +9,8 @@
             "BOOKING" : "booking",
             "CENTER_OTPS": "center-otp",
             "CENTER_VERIFY": "center-verify",
-            "ORDERED_TEST": "ordered-test"
+            "ORDERED_TEST": "ordered-test",
+            "PAYMENT": "payment"
         },
         "STATUS": {
             "ACTIVE": "ACTIVE",
