@@ -64,7 +64,6 @@ module.exports.paymentVerification = async (req, res) => {
 
         await DBUtils.create(
             {
-                email,
                 razorpay_payment_id,
                 razorpay_order_id,
                 razorpay_signature,
