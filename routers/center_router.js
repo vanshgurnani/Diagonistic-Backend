@@ -47,6 +47,9 @@ router.put('/', uploadFields , Center.updateCenter);
 
 router.post('/login', Center.loginHandler);
 
+router.put('/profile', JwtService.validateJwt , uploadFields , Center.updateProfile);
+
+
 
 
 module.exports = router;

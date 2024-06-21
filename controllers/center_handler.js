@@ -357,3 +357,62 @@ module.exports.updateCenter = async (req, res) => {
       res.status(500).json({ type: 'Error', message: "Failed to update center." });
   }
 };
+
+module.exports.updateProfile = async(req, res) => {
+    try{
+        const email = req.decodedToken.email;
+
+        console.log(email);
+
+        if (!email) {
+            return res.status(400).json({ error: "Email is required." });
+        }
+  
+        const updateFields = {
+            name: req.body.name,
+            contact: req.body.contact,
+            password: req.body.password,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            ownerContact: req.body.ownerContact,
+            centerGST: req.body.centerGST,
+            address: req.body.address,
+            staffNumber: req.body.staffNumber,
+            status: req.body.status,
+            available: req.body.available,
+        };
+  
+        const uploadedFiles = {};
+  
+        if (req.files) {
+            for (const [fieldName, files] of Object.entries(req.files)) {
+                for (const file of files) {
+                    const fileName = `${fieldName}-${Date.now()}-${file.originalname}`;
+                    const fileUrl = await s3Utils.uploadFileToS3(file, fileName, process.env.AWS_BUCKET_NAME);
+                    uploadedFiles[fieldName] = fileUrl.Location;
+                }
+            }
+        }
+  
+        const update = {
+            ...updateFields,
+            addressProof: uploadedFiles.addressProof,
+            shopAct: uploadedFiles.shopAct,
+            pcpndt: uploadedFiles.pcpndt,
+            iso: uploadedFiles.iso,
+            nabl: uploadedFiles.nabl,
+            nabh: uploadedFiles.nabh,
+            centerImg: uploadedFiles.centerImg
+        };
+  
+        const result = await dbUtils.updateOne({ email: email }, { $set: update }, DATABASE_COLLECTIONS.CENTER);
+
+  
+        res.status(200).json({ type: "success", message: "Center updated successfully.", result });
+
+    }
+    catch (error) {
+        console.error(`[updateCenterProfile] Error occurred: ${error}`);
+        res.status(500).json({ type: 'Error', message: "Failed to update center." });
+    }
+};

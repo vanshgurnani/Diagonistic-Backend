@@ -72,7 +72,7 @@ const centerSchema = new mongoose.Schema({
     available: {
       type: String,
       enum: [DATABASE.AVAILABLE.YES , DATABASE.AVAILABLE.NO],
-      default: DATABASE.AVAILABLE.NO
+      default: DATABASE.AVAILABLE.YES
     },
     status: {
       type: String,
