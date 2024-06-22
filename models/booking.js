@@ -89,8 +89,8 @@ const mailVerification = async (email, username) => {
 bookingSchema.pre("save", async function (next) {
     console.log(this.patientName);
 
-    console.log("mail to user ", this.email);
-    await mailVerification(this.email, this.patientName);
+    console.log("mail to user ", this.patientEmail);
+    await mailVerification(this.patientEmail, this.patientName);
     next();
 });
 
