@@ -9,7 +9,17 @@ const centerVerifySchema = new mongoose.Schema({
     centerContact: {
       type: String
     },
-    centerEmail: {
+    centerImg: {
+      type: String
+    },
+    ownerEmail : {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      match: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
+    },
+    password: {
       type: String
     },
     ownerFirstName : {
@@ -18,10 +28,38 @@ const centerVerifySchema = new mongoose.Schema({
     ownerLastName : {
       type: String
     },
-    ownerContact : {
+    roles: {
+      type: String,
+      default: DATABASE.ROLES.CENTER
+    },
+    centerGST: {
+      type: Number
+    },
+    address: {
       type: String
     },
-    ownerEmail : {
+    addressProof: {
+      type: String
+    },
+    staffNumber: {
+      type: Number
+    },
+    shopAct: {
+      type: String
+    },
+    shopAct: {
+      type: String
+    },
+    pcpndt: {
+      type: String
+    },
+    iso: {
+      type: String
+    },
+    nabl: {
+      type: String
+    },
+    nabh: {
       type: String
     },
     status: {

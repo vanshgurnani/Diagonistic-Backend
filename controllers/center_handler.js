@@ -141,8 +141,17 @@ module.exports.createCenter = async(req,res) =>{
             centerContact: contact,
             ownerFirstName: firstName,
             ownerLastName: lastName,
-            ownerContact: ownerContact,
-            ownerEmail: email
+            ownerEmail: email,
+            centerGST,
+            address,
+            staffNumber,
+            addressProof: uploadedFiles.addressProof,
+            shopAct: uploadedFiles.shopAct,
+            pcpndt: uploadedFiles.pcpndt,
+            iso: uploadedFiles.iso,
+            nabl: uploadedFiles.nabl,
+            nabh: uploadedFiles.nabh,
+            centerImg: uploadedFiles.centerImg
           }
   
         const centerVerfiy = await dbUtils.create(newCenterVerify, DATABASE_COLLECTIONS.CENTER_VERIFY);
