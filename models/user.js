@@ -89,26 +89,38 @@ const userSchema = new Schema({
     },
 });
 
-const mailVerification = async (email, username) => {
+const mailVerification = async (email, username, status) => {
     try {
-        const emailSubject = "DiagnoWeb Registration";
-        const emailText = null;
-        const content = "DiagnoWeb";
-        const html = template.sendDynamicEmailTemplate(emailSubject,username , content);
+        let emailSubject = "";
+        let emailText = null;
+        let content = "DiagnoWeb"; // Default content
 
+        if (status === DATABASE.STATUS.PENDING) {
+            emailSubject = "Pending Request on DiagnoWeb";
+            // Customize the email template for pending status
+            content = "Pending Request";
+        } else {
+            emailSubject = "DiagnoWeb Registration";
+            // Default registration email template
+            content = "DiagnoWeb";
+        }
+
+        const html = template.sendDynamicEmailTemplate(emailSubject, username, content);
         await emailService.sendMail(email, emailSubject, emailText, html);
     } catch (error) {
-        console.log("error occur in mailVerification ", error);
+        console.log("Error occurred in mailVerification ", error);
         throw error;
     }
 };
 
-//  send otp email before saving data in db
+// Pre-save hook to send email before saving data in the database
 userSchema.pre("save", async function (next) {
-    console.log(this.username);
-
-    console.log("mail to user ", this.email);
-    await mailVerification(this.email, this.username);
+    console.log("User's name:", this.firstName, this.lastName);
+    console.log("Email to user:", this.email);
+    
+    // Call mailVerification function based on user status
+    await mailVerification(this.email, this.firstName + " " + this.lastName, this.status);
+    
     next();
 });
 
