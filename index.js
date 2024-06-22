@@ -14,6 +14,7 @@ const dashboardRouter = require("./routers/dasboard_router");
 const bookingRouter = require("./routers/booking_router");
 const centerRouter = require("./routers/center_router");
 const paymentRouter = require("./routers/payment_router");
+const centerVerifyRouter = require("./routers/center_verify_router");
 
 
 const EXPRESS_SESSION_CONFIGS = {
@@ -66,6 +67,7 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/booking", bookingRouter);
 app.use("/api/center", centerRouter);
 app.use("/api/pay", paymentRouter);
+app.use("/api/verify", centerVerifyRouter);
 
 
 
