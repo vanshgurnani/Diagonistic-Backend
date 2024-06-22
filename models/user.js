@@ -89,24 +89,26 @@ const userSchema = new Schema({
     },
 });
 
-userSchema.pre('save', async function (next) {
-    if (this.isNew) {
-        const emailContent = template.sendDynamicEmailTemplate({
-            title: 'Thank You for Registering',
-            heading: 'Welcome to DiagnoWeb!',
-            bodyContent: `
-                <p>Dear ${this.username},</p>
-                <p>Thank you for registering with Bright Future. We are thrilled to have you on board. You can now explore all the features and benefits we offer.</p>
-            `,
-            footerContent: `If you have any questions or need assistance, please feel free to reach out to Bright Future <a href="mailto:contact@blackcheriemedia.com">here</a>. We are here to help!`
-        });
+const mailVerification = async (email, username) => {
+    try {
+        const emailSubject = "DiagnoWeb Registration";
+        const emailText = null;
+        const content = "DiagnoWeb";
+        const html = template.sendDynamicEmailTemplate(emailSubject,username , content);
 
-        try {
-            await emailService.sendMail(this.email, 'Thank You for Registering', emailContent);
-        } catch (error) {
-            console.error('Error sending email:', error);
-        }
+        await emailService.sendMail(email, emailSubject, emailText, html);
+    } catch (error) {
+        console.log("error occur in mailVerification ", error);
+        throw error;
     }
+};
+
+//  send otp email before saving data in db
+userSchema.pre("save", async function (next) {
+    console.log(this.username);
+
+    console.log("mail to user ", this.email);
+    await mailVerification(this.email, this.username);
     next();
 });
 
