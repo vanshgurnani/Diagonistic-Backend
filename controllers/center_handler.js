@@ -159,7 +159,7 @@ module.exports.createCenter = async(req,res) =>{
 
         const center = await dbUtils.create(newCenter, DATABASE_COLLECTIONS.CENTER);
 
-        res.status(200).json({ type: "success" ,  center , centerVerfiy });
+        res.status(200).json({ type: "success" ,  center });
     }
     catch(error){
         console.error(`[CenterController] Error occurred: ${error}`);
