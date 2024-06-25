@@ -10,7 +10,8 @@ const centerSchema = new mongoose.Schema({
       type: String
     },
     centerImg: {
-      type: String
+      type: String,
+      default: 'https://cdn.docplexus.com/116/3/3/069df40b-f4aa-422a-b565-cd6358561cc0__t.jpg'
     },
     email : {
       type: String,
@@ -78,6 +79,10 @@ const centerSchema = new mongoose.Schema({
       type: String,
       enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE , DATABASE.STATUS.PENDING],
       default: DATABASE.STATUS.PENDING
+    },
+    saved: {
+      type: Boolean,
+      default: false
     },
     createdAt: {
         type: Date,

@@ -340,6 +340,7 @@ module.exports.updateCenter = async (req, res) => {
           staffNumber: req.body.staffNumber,
           status: req.body.status,
           available: req.body.available,
+          saved: req.body.saved
       };
 
       const uploadedFiles = {};
