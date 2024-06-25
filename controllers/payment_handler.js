@@ -14,7 +14,7 @@ module.exports.checkout = async (req, res) => {
         });
 
         // Extract and validate amount from query parameters
-        const amount = req.query.amount;
+        const amount = req.body.amount;
         if (!amount) {
             throw new Error('Please provide the amount as a query parameter.');
         }
