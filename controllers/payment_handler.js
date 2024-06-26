@@ -59,24 +59,33 @@ module.exports.paymentVerification = async (req, res) => {
         .update(generated_signature.toString())
         .digest("hex");
 
-    if (expected_signature == razorpay_signature) {
-        console.log("Payment verified successfully");
+    if (expected_signature === razorpay_signature) {
+        console.log("Payment verified successfully for payment ID:", razorpay_payment_id);
 
-        await DBUtils.create(
-            {
-                razorpay_payment_id,
-                razorpay_order_id,
-                razorpay_signature,
-                amount
-            },
-            Configs.CONSTANTS.DATABASE_COLLECTIONS.PAYMENT
-        );
+        try {
+            await DBUtils.create(
+                {
+                    razorpay_payment_id,
+                    razorpay_order_id,
+                    razorpay_signature,
+                    amount
+                },
+                Configs.CONSTANTS.DATABASE_COLLECTIONS.PAYMENT
+            );
 
-        res.redirect(
-            `${process.env.FRONTEND_URL}/paymentSuccess?reference=${razorpay_payment_id}`
-        );
+            res.redirect(
+                `${process.env.FRONTEND_URL}/paymentSuccess?reference=${razorpay_payment_id}`
+            );
+        } catch (error) {
+            console.error("Database error during payment record creation:", error);
+            res.redirect(
+                `${process.env.FRONTEND_URL}/paymentFailed?reference=${razorpay_payment_id}`
+            );
+        }
     } else {
-        console.log("Payment verification failed");
+        console.error("Payment verification failed for payment ID:", razorpay_payment_id);
+        const error = new Error("Signature mismatch during payment verification.");
+        console.error(error);
         res.redirect(
             `${process.env.FRONTEND_URL}/paymentFailed?reference=${razorpay_payment_id}`
         );
