@@ -77,15 +77,15 @@ module.exports.paymentVerification = async (req, res) => {
                 `${process.env.FRONTEND_URL}/paymentSuccess?reference=${razorpay_payment_id}`
             );
         } catch (error) {
-            console.error("Database error during payment record creation:", error);
+            console.log("Database error during payment record creation:", error);
             res.redirect(
                 `${process.env.FRONTEND_URL}/paymentFailed?reference=${razorpay_payment_id}`
             );
         }
     } else {
-        console.error("Payment verification failed for payment ID:", razorpay_payment_id);
+        console.log("Payment verification failed for payment ID:", razorpay_payment_id);
         const error = new Error("Signature mismatch during payment verification.");
-        console.error(error);
+        console.log(error);
         res.redirect(
             `${process.env.FRONTEND_URL}/paymentFailed?reference=${razorpay_payment_id}`
         );
