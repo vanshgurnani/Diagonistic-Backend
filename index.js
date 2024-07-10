@@ -28,12 +28,13 @@ app.use(session(EXPRESS_SESSION_CONFIGS));
 
 app.use(passport.initialize());
 
-const corsOptions = {
-    origin: 'https://diagnostic-frontend.vercel.app', 
-    optionsSuccessStatus: 200 
-};
+app.use(cors({
+    origin: "https://diagnostic-frontend.vercel.app", // Replace with your frontend URL
+    methods: ["GET", "POST"], // Allowed HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+}));
 
-app.use(cors(corsOptions));
+app.options("*", cors());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
