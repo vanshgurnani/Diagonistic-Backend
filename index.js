@@ -31,7 +31,7 @@ app.use(passport.initialize());
 app.use(cors({
     origin: "https://diagnostic-frontend.vercel.app", // Replace with your frontend URL
     methods: ["GET", "POST"], // Allowed HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    allowedHeaders: ["Content-Type", "Authorization" , "Access-Control-Allow-Origin"], // Allowed headers
 }));
 
 app.options("*", cors());
