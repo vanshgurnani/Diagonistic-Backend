@@ -74,7 +74,7 @@ module.exports.paymentVerification = async (req, res) => {
             );
 
             res.redirect(
-                `${process.env.FRONTEND_URL}/paymentSuccess}`
+                `${process.env.FRONTEND_URL}/paymentSuccess`
             );
         } catch (error) {
             console.log("Database error during payment record creation:", error);
