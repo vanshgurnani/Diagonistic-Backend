@@ -74,12 +74,12 @@ module.exports.paymentVerification = async (req, res) => {
             );
 
             res.redirect(
-                `${process.env.FRONTEND_URL}/paymentSuccess?reference=${razorpay_payment_id}`
+                `${process.env.FRONTEND_URL}/paymentSuccess}`
             );
         } catch (error) {
             console.log("Database error during payment record creation:", error);
             res.redirect(
-                `${process.env.FRONTEND_URL}/paymentFailed?reference=${razorpay_payment_id}`
+                `${process.env.FRONTEND_URL}/paymentFailed`
             );
         }
     } else {
@@ -87,7 +87,7 @@ module.exports.paymentVerification = async (req, res) => {
         const error = new Error("Signature mismatch during payment verification.");
         console.log(error);
         res.redirect(
-            `${process.env.FRONTEND_URL}/paymentFailed?reference=${razorpay_payment_id}`
+            `${process.env.FRONTEND_URL}/paymentFailed`
         );
     }
 };
