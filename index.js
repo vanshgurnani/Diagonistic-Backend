@@ -52,6 +52,14 @@ app.use("/api/center", centerRouter);
 app.use("/api/pay", paymentRouter);
 app.use("/api/verify", centerVerifyRouter);
 
+app.get("/paymentSuccess", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "https://diagnostic-frontend.vercel.app"); 
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    res.status(200).json({ message: "Payment success!" });
+});
+
 
 
 
