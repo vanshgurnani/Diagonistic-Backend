@@ -26,30 +26,6 @@ const EXPRESS_SESSION_CONFIGS = {
 const app = express();
 app.use(session(EXPRESS_SESSION_CONFIGS));
 
-const allowedOrigins = [
-    "https://diagnostic-frontend.vercel.app",
-    "http://localhost:5173",
-    "https://diagonistic-backend.vercel.app"
-];
-
-// Add this middleware to your server configuration
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    }
-    res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-    );
-    res.setHeader(
-        "Access-Control-Allow-Headers",
-        "X-Requested-With,content-type"
-    );
-    res.setHeader("Access-Control-Allow-Credentials", true);
-    next();
-});
-
 app.use(passport.initialize());
 
 app.use(cors());
