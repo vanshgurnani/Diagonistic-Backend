@@ -1,7 +1,10 @@
+const QRCode = require('qrcode');
 const dbUtils = require("../utils/db_operations");
 const commonUtils = require("../utils/common");
 const configs = require("../configs.json");
 const s3Utils = require("../utils/s3");
+const template = require("../utils/template");
+const emailService = require("../services/email_service");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
 const DATABASE = configs.CONSTANTS;
 
@@ -56,6 +59,45 @@ module.exports.createBooking =  async(req,res) =>{
         }
 
         const order = await dbUtils.create(newOrder, DATABASE_COLLECTIONS.ORDERED_TEST);
+
+        const dateObj = new Date(timeSlot);
+        const date = dateObj.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        const time = dateObj.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        const emailSubject = "DiagnoWeb Booking Confirmation";
+        const content = `
+          Dear ${fullname},
+    
+          Thank you for booking your test with DiagnoWeb. Here are the details of your booking:
+    
+          Test Name: ${testName}
+          Preferred Doctor: ${preferredDoctorName}
+          Center Email: ${centerEmail}
+          Rate: ${rate}
+    
+          Date: ${date}
+          Time: ${time}
+    
+          Please make sure to be at the venue at least 15 minutes before your scheduled time.
+    
+          If you have any questions, feel free to contact us at [Contact Information].
+    
+          Best regards,
+          DiagnoWeb Team
+        `;
+    
+        const html = template.sendDynamicEmailTemplate(emailSubject, fullname, content);
+    
+        await emailService.sendMail(email, emailSubject, null, html);
+    
+
 
         res.status(200).json({ type: "success" ,  Booking , order });
 
