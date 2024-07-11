@@ -1,4 +1,3 @@
-const QRCode = require('qrcode');
 const dbUtils = require("../utils/db_operations");
 const commonUtils = require("../utils/common");
 const configs = require("../configs.json");
