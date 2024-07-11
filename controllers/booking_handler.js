@@ -70,7 +70,7 @@ module.exports.getBooking = async (req, res) => {
     // Extract filter, sort, limit, and page from the request query
     const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
     const sort = req?.query?.sort ? JSON.parse(req.query.sort) : { createdAt: -1 };
-    const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
+    const limit = req?.query?.limit ? parseInt(req.query.limit) : 3;
     const page = req?.query?.page ? parseInt(req.query.page) : 1;
     const skip = (page - 1) * limit;
 
