@@ -83,6 +83,14 @@ module.exports.getBooking = async (req, res) => {
         $match: { ...filter, centerEmail: email }
       },
       {
+        $lookup: {
+          from: 'payments', // Replace with your payment collection name
+          localField: 'paymentId',
+          foreignField: 'razorpay_payment_id',
+          as: 'paymentDetails'
+        }
+      },
+      {
         $facet: {
           totalCount: [{ $count: "total" }],
           data: [
