@@ -373,6 +373,8 @@ module.exports.googleHandler = async (req, res) => {
             const tokenData = {
                 id: user._id,
                 email: user.email,
+                firstname: user.firstName,
+                lastname: user.lastName,
                 roles: user.roles,
             };
             const accessToken = jwtService.generateToken(tokenData);
@@ -398,6 +400,8 @@ module.exports.googleHandler = async (req, res) => {
             const tokenData = {
                 id: user._id,
                 email: user.email,
+                firstname: user.firstName,
+                lastname: user.lastName,
                 roles: user.roles,
             };
             const accessToken = jwtService.generateToken(tokenData);
