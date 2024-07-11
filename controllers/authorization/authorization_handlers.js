@@ -230,29 +230,10 @@ module.exports.getProfileController = async (req, res) => {
             DATABASE_COLLECTIONS.USERS
         );
 
-
-        const pipeline = [
-            {
-                $match: {
-                    patientEmail: email
-                }
-            },
-            {
-                $sort: {
-                    createdAt: -1
-                }
-            },
-            {
-                $lookup: {
-                    from: 'payments', // Replace with your payment collection name
-                    localField: 'paymentId',
-                    foreignField: 'razorpay_payment_id',
-                    as: 'paymentDetails'
-                }
-            }
-        ]
-
-        const userTest = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.ORDERED_TEST);
+        const userTest = await dbUtils.findMany(
+            {patientEmail: email},
+            DATABASE_COLLECTIONS.ORDERED_TEST
+        );
 
         // Check if user profile exists
         if (!userProfile) {
@@ -262,9 +243,7 @@ module.exports.getProfileController = async (req, res) => {
                 DATABASE_COLLECTIONS.CENTER
             );
 
-            return res.status(200).json({ type: "Success", centerProfile , 
-                userTest: "No oredered Test for center"
-            });
+            return res.status(200).json({ type: "Success", centerProfile });
 
         }
 
