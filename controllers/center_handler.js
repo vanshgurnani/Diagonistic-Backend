@@ -151,7 +151,10 @@ module.exports.createCenter = async(req,res) =>{
             iso: uploadedFiles.iso,
             nabl: uploadedFiles.nabl,
             nabh: uploadedFiles.nabh,
-            centerImg: uploadedFiles.centerImg
+            centerImg: uploadedFiles.centerImg,
+            isIso: !!uploadedFiles.iso,
+            isNabl: !!uploadedFiles.nabl,
+            isNabh: !!uploadedFiles.nabh
           }
   
         const centerVerfiy = await dbUtils.create(newCenterVerify, DATABASE_COLLECTIONS.CENTER_VERIFY);
@@ -173,7 +176,10 @@ module.exports.createCenter = async(req,res) =>{
             iso: uploadedFiles.iso,
             nabl: uploadedFiles.nabl,
             nabh: uploadedFiles.nabh,
-            centerImg: uploadedFiles.centerImg
+            centerImg: uploadedFiles.centerImg,
+            isIso: !!uploadedFiles.iso,
+            isNabl: !!uploadedFiles.nabl,
+            isNabh: !!uploadedFiles.nabh
 
         }
 

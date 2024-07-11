@@ -67,6 +67,15 @@ const centerVerifySchema = new mongoose.Schema({
       enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE , DATABASE.STATUS.PENDING],
       default: DATABASE.STATUS.PENDING
     },
+    isIso: {
+      type: Boolean
+    },
+    isNabl: {
+      type: Boolean
+    },
+    isNabh: {
+      type: Boolean
+    },
     createdAt: {
         type: Date,
         default: Date.now,

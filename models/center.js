@@ -84,6 +84,15 @@ const centerSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    isIso: {
+      type: Boolean
+    },
+    isNabl: {
+      type: Boolean
+    },
+    isNabh: {
+      type: Boolean
+    },
     createdAt: {
         type: Date,
         default: Date.now,
