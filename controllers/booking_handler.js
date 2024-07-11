@@ -21,13 +21,14 @@ module.exports.createBooking =  async(req,res) =>{
             { property: "preferredDoctorName", optional: true },
             { property: "rate", optional: true },
             { property: "timeSlot", optional: true },
+            { property: "paymentId", optional: true }
             
 
         ];
 
         const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
 
-        const { testName , preferredDoctorName , centerEmail, rate ,timeSlot } = payload;
+        const { testName , preferredDoctorName , centerEmail, rate ,timeSlot, paymentId } = payload;
 
         const newBooking = {
             patientName : fullname,
@@ -37,7 +38,8 @@ module.exports.createBooking =  async(req,res) =>{
             testName ,
             preferredDoctorName ,
             rate ,
-            timeSlot
+            timeSlot ,
+            paymentId
 
         }
 
@@ -46,6 +48,7 @@ module.exports.createBooking =  async(req,res) =>{
         
         const newOrder = {
           bookingId: Booking._id,
+          paymentId: Booking.paymentId,
           centerEmail: centerEmail,
           patientName: fullname,
           patientEmail: email,

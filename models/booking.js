@@ -38,7 +38,7 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         default: "NULL"
     },
-    payementId: {
+    paymentId: {
         type: String,
         default: "NULL"
     },

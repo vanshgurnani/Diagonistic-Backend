@@ -32,6 +32,10 @@ const orderedSchema = new mongoose.Schema({
         enum: [DATABASE.STATUS.ONGOING , DATABASE.STATUS.PREVIOUS],
         default: DATABASE.STATUS.ONGOING
     },
+    paymentId: {
+        type: String,
+        default: "NULL"
+    },
     createdAt: {
         type: Date,
         default: Date.now,
