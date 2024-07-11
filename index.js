@@ -26,15 +26,33 @@ const EXPRESS_SESSION_CONFIGS = {
 const app = express();
 app.use(session(EXPRESS_SESSION_CONFIGS));
 
+const allowedOrigins = [
+    "https://diagnostic-frontend.vercel.app",
+    "http://localhost:5173",
+    "https://diagonistic-backend.vercel.app"
+];
+
+// Add this middleware to your server configuration
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "X-Requested-With,content-type"
+    );
+    res.setHeader("Access-Control-Allow-Credentials", true);
+    next();
+});
+
 app.use(passport.initialize());
 
-app.use(cors({
-    origin: "https://diagnostic-frontend.vercel.app", // Replace with your frontend URL
-    methods: ["GET", "POST"], // Allowed HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization" , "Access-Control-Allow-Origin"], // Allowed headers
-}));
-
-app.options("*", cors());
+app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -51,10 +69,6 @@ app.use("/api/booking", bookingRouter);
 app.use("/api/center", centerRouter);
 app.use("/api/pay", paymentRouter);
 app.use("/api/verify", centerVerifyRouter);
-
-app.get("/paymentSuccess", (req, res) => {
-    res.status(200).json({ message: "Payment success!" });
-});
 
 
 
