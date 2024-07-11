@@ -262,7 +262,9 @@ module.exports.getProfileController = async (req, res) => {
                 DATABASE_COLLECTIONS.CENTER
             );
 
-            return res.status(200).json({ type: "Success", centerProfile });
+            return res.status(200).json({ type: "Success", centerProfile , 
+                userTest: "No oredered Test for center"
+            });
 
         }
 
