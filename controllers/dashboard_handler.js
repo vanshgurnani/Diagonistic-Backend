@@ -96,6 +96,8 @@ module.exports.dashboardGet = async (req, res) => {
             {
                 $project: {
                     centerName: 1,
+                    contact: 1,
+                    ownerContact: 1,
                     totalBookings: 1,
                     totalRevenue: 1,
                     commission: 1
