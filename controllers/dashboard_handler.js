@@ -53,3 +53,97 @@ module.exports.dashboardGet = async (req, res) => {
         });
     }
 };
+
+module.exports.centerData = async (req, res) => {
+    try{
+        // Pagination parameters with defaults
+        const limit = req.query.limit ? parseInt(req.query.limit) : 5;
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const skip = (page - 1) * limit;
+
+
+        // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
+        const pipeline = [
+            {
+                $match: {}
+            },
+            {
+                $skip: skip
+            },
+            {
+                $limit: limit
+            },
+            {
+                $sort: {
+                    createdAt: -1
+                }
+            },
+            {
+                $lookup: {
+                    from: "bookings",
+                    localField: "email",
+                    foreignField: "centerEmail",
+                    as: "bookings"
+                }
+            },
+            {
+                $addFields: {
+                    totalBookings: { $size: "$bookings" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "payments",
+                    let: { bookings: "$bookings" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$razorpay_payment_id", { $map: { input: "$$bookings", as: "booking", in: "$$booking.paymentId" } }]
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalRevenue: { $sum: "$amount" }
+                            }
+                        }
+                    ],
+                    as: "revenue"
+                }
+            },
+            {
+                $addFields: {
+                    totalRevenue: { $ifNull: [{ $arrayElemAt: ["$revenue.totalRevenue", 0] }, 0] }
+                }
+            },
+            {
+                $project: {
+                    centerName: 1,
+                    totalBookings: 1,
+                    totalRevenue: 1
+                }
+            }
+        ];
+
+        // Execute the aggregate query
+        let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
+
+        const totalCount = result.length;
+
+        // Send Success response with permissions data
+        res.status(200).json({
+            type: 'Success',
+            page,
+            limit,
+            totalCount,
+            data: result
+        });
+    } catch (error) {
+        console.error(`[centerData] Error occurred: ${error.message}`);
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+}
