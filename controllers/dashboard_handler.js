@@ -122,6 +122,8 @@ module.exports.dashboardGet = async (req, res) => {
 
         const totalCommission = result.reduce((acc, center) => acc + center.commission, 0);
 
+        const totalPayment = result.reduce((acc, center) => acc + center.totalRevenue, 0);
+
 
         // Send Success response with permissions data
         res.status(200).json({
@@ -132,6 +134,7 @@ module.exports.dashboardGet = async (req, res) => {
             totalPatients: patientCount,
             totalCenters: centerCount,
             totalCommission: totalCommission,
+            totalPayment: totalPayment,
             data: result
         });
     } catch (error) {
