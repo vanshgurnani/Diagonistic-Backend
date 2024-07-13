@@ -11,7 +11,7 @@ const centerSchema = new mongoose.Schema({
     },
     centerImg: {
       type: String,
-      default: 'https://cdn.docplexus.com/116/3/3/069df40b-f4aa-422a-b565-cd6358561cc0__t.jpg'
+      default: 'https://static.vecteezy.com/system/resources/thumbnails/017/177/954/small/round-medical-cross-symbol-on-transparent-background-free-png.png'
     },
     email : {
       type: String,
