@@ -6,7 +6,5 @@ router.post("/get-location", dashboardHandler.suggestLocation);
 
 router.get("/", dashboardHandler.dashboardGet);
 
-router.get("/center", dashboardHandler.centerData);
-
 
 module.exports = router;

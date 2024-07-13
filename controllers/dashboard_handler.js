@@ -29,32 +29,6 @@ module.exports.suggestLocation = async (req, res) => {
 };
 
 module.exports.dashboardGet = async (req, res) => {
-    try {
-        // Using the new countDocuments method
-        const patientCount = await dbUtils.countDocuments(
-            { roles: configs.CONSTANTS.ROLES.PATIENT },
-            DATABASE_COLLECTIONS.USERS
-        );
-
-        const centerCount = await dbUtils.countDocuments(
-            {},
-            DATABASE_COLLECTIONS.CENTER
-        );
-
-        res.status(200).json({
-            message: "Dashboard data fetched successfully",
-            totalPatients: patientCount,
-            totalCenters: centerCount
-        });
-    } catch (error) {
-        console.error(`[getDashboard] Error occurred: ${error.message}`);
-        res.status(500).json({
-            error: error.message,
-        });
-    }
-};
-
-module.exports.centerData = async (req, res) => {
     try{
         // Pagination parameters with defaults
         const limit = req.query.limit ? parseInt(req.query.limit) : 5;
@@ -115,14 +89,16 @@ module.exports.centerData = async (req, res) => {
             },
             {
                 $addFields: {
-                    totalRevenue: { $ifNull: [{ $arrayElemAt: ["$revenue.totalRevenue", 0] }, 0] }
+                    totalRevenue: { $ifNull: [{ $arrayElemAt: ["$revenue.totalRevenue", 0] }, 0] },
+                    commission: { $multiply: [{ $ifNull: [{ $arrayElemAt: ["$revenue.totalRevenue", 0] }, 0] }, 0.02] }
                 }
             },
             {
                 $project: {
                     centerName: 1,
                     totalBookings: 1,
-                    totalRevenue: 1
+                    totalRevenue: 1,
+                    commission: 1
                 }
             }
         ];
@@ -132,12 +108,28 @@ module.exports.centerData = async (req, res) => {
 
         const totalCount = result.length;
 
+        const patientCount = await dbUtils.countDocuments(
+            { roles: configs.CONSTANTS.ROLES.PATIENT },
+            DATABASE_COLLECTIONS.USERS
+        );
+
+        const centerCount = await dbUtils.countDocuments(
+            {},
+            DATABASE_COLLECTIONS.CENTER
+        );
+
+        const totalCommission = result.reduce((acc, center) => acc + center.commission, 0);
+
+
         // Send Success response with permissions data
         res.status(200).json({
             type: 'Success',
             page,
             limit,
             totalCount,
+            totalPatients: patientCount,
+            totalCenters: centerCount,
+            totalCommission: totalCommission,
             data: result
         });
     } catch (error) {
@@ -146,4 +138,4 @@ module.exports.centerData = async (req, res) => {
             error: error.message,
         });
     }
-}
+};
