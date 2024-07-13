@@ -136,6 +136,10 @@ module.exports.createCenter = async(req,res) =>{
             }
         }
 
+        if (!uploadedFiles.centerImg) {
+            uploadedFiles.centerImg = 'https://static.vecteezy.com/system/resources/thumbnails/017/177/954/small/round-medical-cross-symbol-on-transparent-background-free-png.png';
+        }
+
         const newCenterVerify = {
             centerName: centerName,
             centerContact: contact,
