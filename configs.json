@@ -28,7 +28,7 @@
             "USER": "USER",
             "PATIENT": "PATIENT",
             "CENTER": "CENTER",
-            "SUPER_ADMIN": "SUPER-ADMIN"
+            "ADMIN": "ADMIN"
         },
 
         "AVAILABLE": {

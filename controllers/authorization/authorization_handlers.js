@@ -109,6 +109,7 @@ module.exports.registerHandler = async (req, res) => {
         let requiredFields = [
             { property: "email", optional: true },
             { property: "password", optional: true },
+            { property: "roles", optional: true },
             { property: "firstName", optional: true },
             { property: "lastName", optional: true },
             { property: "otp", optional: true },
