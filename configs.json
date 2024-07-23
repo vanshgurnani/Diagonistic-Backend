@@ -27,7 +27,8 @@
         "ROLES": {
             "USER": "USER",
             "PATIENT": "PATIENT",
-            "CENTER": "CENTER"
+            "CENTER": "CENTER",
+            "SUPER_ADMIN": "SUPER-ADMIN"
         },
 
         "AVAILABLE": {

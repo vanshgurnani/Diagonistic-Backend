@@ -44,6 +44,7 @@ const userSchema = new Schema({
             DATABASE.ROLES.USER,
             DATABASE.ROLES.PATIENT,
             DATABASE.ROLES.CENTER,
+            DATABASE.ROLES.SUPER_ADMIN
         ],
         default: DATABASE.ROLES.PATIENT,
     },
