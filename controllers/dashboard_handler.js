@@ -144,3 +144,59 @@ module.exports.dashboardGet = async (req, res) => {
         });
     }
 };
+
+module.exports.getTopCenters = async (req, res) => {
+    try {
+        // Define the pipeline to fetch top 3 centers by total bookings
+        const pipeline = [
+            {
+                $match: {}
+            },
+            {
+                $lookup: {
+                    from: "bookings",
+                    localField: "email",
+                    foreignField: "centerEmail",
+                    as: "bookings"
+                }
+            },
+            {
+                $addFields: {
+                    totalBookings: { $size: "$bookings" }
+                }
+            },
+            {
+                $sort: {
+                    totalBookings: -1
+                }
+            },
+            {
+                $limit: 3
+            },
+            {
+                $project: {
+                    centerName: 1,
+                    contact: 1,
+                    ownerContact: 1,
+                    totalBookings: 1,
+                    totalRevenue: 1,
+                    commission: 1
+                }
+            }
+        ];
+
+        // Execute the aggregation query
+        const topCenters = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
+
+        // Send the response with the top centers data
+        res.status(200).json({
+            type: 'Success',
+            topCenters
+        });
+    } catch (error) {
+        console.error(`[getTopCenters] Error occurred: ${error.message}`);
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
