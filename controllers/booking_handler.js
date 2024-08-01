@@ -118,6 +118,10 @@ module.exports.getBooking = async (req, res) => {
     const page = req?.query?.page ? parseInt(req.query.page) : 1;
     const skip = (page - 1) * limit;
 
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
     // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
     const pipeline = [
       {
@@ -187,12 +191,31 @@ module.exports.getBooking = async (req, res) => {
     const totalDocumentCount = result[0].totalCount;
     const totalPages = Math.ceil(totalDocumentCount / limit);
 
+    const monthlyBookingCountPipeline = [
+      {
+        $match: {
+          centerEmail: email,
+          createdAt: {
+            $gte: startOfMonth,
+            $lte: endOfMonth
+          }
+        }
+      },
+      {
+        $count: "monthlyCount"
+      }
+    ];
+
+    const monthlyCountResult = await dbUtils.aggregate(monthlyBookingCountPipeline, DATABASE_COLLECTIONS.BOOKING);
+    const monthlyBookingCount = monthlyCountResult.length ? monthlyCountResult[0].monthlyCount : 0;
+
     // Send Success response with bookings data
     res.status(200).json({
       type: 'Success',
       page,
       limit,
       totalPages,
+      monthlyBookingCount,
       totalCount: result[0].totalCount,
       statusCounts: result[0].statusCounts,
       bookings: result[0].bookingData
