@@ -171,7 +171,7 @@ module.exports.getTopCenters = async (req, res) => {
             {
                 $addFields: {
                     totalBookings: { $size: "$bookings" },
-                    highestPrice: { $max: "$testDetails.rate" }
+                    avgPrice: { $avg: "$testDetails.rate" }
                 }
             },
             {
@@ -191,7 +191,7 @@ module.exports.getTopCenters = async (req, res) => {
                     totalBookings: 1,
                     totalRevenue: 1,
                     commission: 1,
-                    highestPrice: 1
+                    avgPrice: 1
                 }
             }
         ];
