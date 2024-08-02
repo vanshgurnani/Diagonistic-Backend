@@ -161,8 +161,17 @@ module.exports.getTopCenters = async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "tests", // Assuming the collection where prices are stored is called "tests"
+                    localField: "email",
+                    foreignField: "email",
+                    as: "testDetails"
+                }
+            },
+            {
                 $addFields: {
-                    totalBookings: { $size: "$bookings" }
+                    totalBookings: { $size: "$bookings" },
+                    highestPrice: { $max: "$testDetails.rate" }
                 }
             },
             {
@@ -181,7 +190,8 @@ module.exports.getTopCenters = async (req, res) => {
                     ownerContact: 1,
                     totalBookings: 1,
                     totalRevenue: 1,
-                    commission: 1
+                    commission: 1,
+                    highestPrice: 1
                 }
             }
         ];
