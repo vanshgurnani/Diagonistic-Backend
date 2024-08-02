@@ -177,6 +177,7 @@ module.exports.getTopCenters = async (req, res) => {
                 $project: {
                     centerName: 1,
                     contact: 1,
+                    centerImg: 1,
                     ownerContact: 1,
                     totalBookings: 1,
                     totalRevenue: 1,
