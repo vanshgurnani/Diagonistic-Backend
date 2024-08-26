@@ -206,14 +206,35 @@ module.exports.getBooking = async (req, res) => {
       }
     ];
 
+    const totalRatePipeline = [
+      {
+        $match: { centerEmail: email } // Filter by centerEmail if needed
+      },
+      {
+        $group: {
+          _id: null,
+          totalRate: { $sum: { $ifNull: ["$rate", 0] } } // Sum the 'rate' field
+        }
+      }
+    ];
+
+    
     const monthlyCountResult = await dbUtils.aggregate(monthlyBookingCountPipeline, DATABASE_COLLECTIONS.BOOKING);
     const monthlyBookingCount = monthlyCountResult.length ? monthlyCountResult[0].monthlyCount : 0;
+
+    const rate = await dbUtils.aggregate(totalRatePipeline, DATABASE_COLLECTIONS.BOOKING);
+
+    console.log(rate);
+
+    // Check if any result is found
+    const totalRate = rate.length ? rate[0].totalRate : 0;
 
     // Send Success response with bookings data
     res.status(200).json({
       type: 'Success',
       page,
       limit,
+      totalRate,
       totalPages,
       monthlyBookingCount,
       totalCount: result[0].totalCount,
