@@ -7,6 +7,8 @@ router.post("/get-location", dashboardHandler.suggestLocation);
 router.get("/", dashboardHandler.dashboardGet);
 router.get("/top", dashboardHandler.getTopCenters);
 
+router.get("/daily", dashboardHandler.getDailyRevenueAndCommission);
+
 
 
 module.exports = router;

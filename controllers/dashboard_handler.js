@@ -211,3 +211,94 @@ module.exports.getTopCenters = async (req, res) => {
         });
     }
 };
+
+// Separate handler for daily revenue and commission calculation
+module.exports.getDailyRevenueAndCommission = async (req, res) => {
+    try {
+        // Extract centerName from query parameters
+        const centerName = req.query.centerName || '';
+
+        // Define the pipeline to aggregate revenue and commission by day
+        const pipeline = [
+            // Filter by centerName if provided
+            {
+                $match: centerName ? { centerName: centerName } : {}
+            },
+            {
+                $lookup: {
+                    from: "bookings",
+                    localField: "email",
+                    foreignField: "centerEmail",
+                    as: "bookings"
+                }
+            },
+            {
+                $addFields: {
+                    totalBookings: { $size: "$bookings" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "payments",
+                    let: { bookings: "$bookings" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$razorpay_payment_id", { $map: { input: "$$bookings", as: "booking", in: "$$booking.paymentId" } }]
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, // Group by day
+                                totalRevenue: { $sum: "$amount" }
+                            }
+                        }
+                    ],
+                    as: "dailyRevenue"
+                }
+            },
+            {
+                $unwind: "$dailyRevenue"
+            },
+            {
+                $addFields: {
+                    dailyRevenue: {
+                        totalRevenue: "$dailyRevenue.totalRevenue",
+                        commission: { $multiply: ["$dailyRevenue.totalRevenue", 0.02] }
+                    }
+                }
+            },
+            {
+                $project: {
+                    date: "$dailyRevenue._id",
+                    totalRevenue: "$dailyRevenue.totalRevenue",
+                    commission: "$dailyRevenue.commission",
+                    centerName: 1,
+                    contact: 1,
+                    ownerContact: 1
+                }
+            },
+            {
+                $sort: {
+                    "date": -1
+                }
+            }
+        ];
+
+        // Execute the aggregate query
+        const dailyResults = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
+
+        // Send Success response with daily revenue and commission data
+        res.status(200).json({
+            type: 'Success',
+            data: dailyResults
+        });
+    } catch (error) {
+        console.error(`[getDailyRevenueAndCommission] Error occurred: ${error.message}`);
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
