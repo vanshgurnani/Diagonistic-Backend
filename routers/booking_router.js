@@ -33,6 +33,8 @@ router.delete('/', JwtService.validateJwt, Book.deleteBooking);
 router.post('/upload', JwtService.validateJwt, upload.fields([{ name: 'files', maxCount: 5 }]), Book.uploadFilesAndUpdateBooking);
 
 router.post('/cancel', JwtService.validateJwt, Book.cancelBooking);
+router.get('/cancel', JwtService.validateJwt, Book.getCancel);
+
 
 
 module.exports = router;
