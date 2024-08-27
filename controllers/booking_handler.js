@@ -392,3 +392,73 @@ module.exports.uploadFilesAndUpdateBooking = async (req, res) => {
     res.status(400).json({ type: 'Error', message: error.message });
   }
 };
+
+module.exports.cancelBooking = async (req, res) => {
+  try {
+    const email = req.decodedToken.email;
+    const id = req.body.id;
+
+    // Convert the string ID to a MongoDB ObjectId
+    const bookingId = await dbUtils.convertStringIdToMongooId(id);
+
+    // Find the booking to check the createdAt timestamp
+    const booking = await dbUtils.findOne(
+      { _id: bookingId, patientEmail: email },
+      DATABASE_COLLECTIONS.BOOKING
+    );
+
+    // If no booking is found, return an error
+    if (!booking) {
+      return res.status(404).json({
+        type: 'Error',
+        message: 'Booking not found or not associated with the provided email.',
+      });
+    }
+
+    // Calculate the time difference between now and the booking's creation time
+    const oneHourInMillis = 60 * 60 * 1000; // 1 hour in milliseconds
+    const timeSinceBooking = Date.now() - new Date(booking.createdAt).getTime();
+
+    // If more than one hour has passed, disallow cancellation
+    if (timeSinceBooking > oneHourInMillis) {
+      return res.status(400).json({
+        type: 'Error',
+        message: 'Booking cannot be canceled after 1 hour from the time of booking.',
+      });
+    }
+
+    // Define the update to cancel the booking
+    const update = {
+      status: DATABASE.STATUS.CANCELLLED,
+    };
+
+    // Attempt to update the booking
+    const updateBooking = await dbUtils.updateOne(
+      { _id: bookingId, patientEmail: email },
+      update,
+      DATABASE_COLLECTIONS.BOOKING
+    );
+
+    // Check if the booking was successfully updated
+    if (updateBooking.modifiedCount === 0) {
+      return res.status(400).json({
+        type: 'Error',
+        message: 'Booking could not be canceled. It may already be canceled or in a non-cancellable state.',
+      });
+    }
+
+    // Send success response
+    res.status(200).json({
+      type: 'Success',
+      message: 'Booking canceled successfully!',
+      updateBooking
+    });
+  } catch (error) {
+    console.error(`[cancelBooking] Error occurred: ${error}`);
+    res.status(500).json({
+      type: 'Error',
+      message: 'An unexpected error occurred. Please try again later.',
+    });
+  }
+};
+

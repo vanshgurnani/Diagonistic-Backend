@@ -21,7 +21,8 @@
             "ACCEPTED" : "ACCEPTED",
             "REJECTED" : "REJECTED",
             "ONGOING": "ONGOING",
-            "PREVIOUS": "PREVIOUS"
+            "PREVIOUS": "PREVIOUS",
+            "CANCELLLED": "CANCELLLED"
         },
 
         "ROLES": {
