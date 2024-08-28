@@ -259,6 +259,7 @@ module.exports.getProfileController = async (req, res) => {
                     foreignField: 'email',
                     pipeline: [{
                         $project: {
+                            _id: 0,
                             centerName: 1,
                             centerImg: 1,
                             address: 1
@@ -266,7 +267,27 @@ module.exports.getProfileController = async (req, res) => {
                     }],
                     as: 'centers'
                 }
-            }
+            },
+            {
+                $addFields: {
+                    bookingId: {$toObjectId: "$bookingId"}
+                }
+            },
+            {
+                $lookup: {
+                    from: 'bookings',
+                    localField: 'bookingId',
+                    foreignField: '_id',
+                    pipeline: [{
+                        $project: {
+                            _id: 0,
+                            preferredDoctorName: 1
+
+                        }
+                    }],
+                    as: 'bookings'
+                }
+            },
         ]
 
         const userTest = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.ORDERED_TEST);
