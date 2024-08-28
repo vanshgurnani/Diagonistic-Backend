@@ -260,7 +260,8 @@ module.exports.getProfileController = async (req, res) => {
                     pipeline: [{
                         $project: {
                             centerName: 1,
-                            centerImg: 1
+                            centerImg: 1,
+                            address: 1
                         }
                     }],
                     as: 'centers'
