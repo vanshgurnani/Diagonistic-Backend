@@ -249,6 +249,20 @@ module.exports.getProfileController = async (req, res) => {
                     foreignField: 'razorpay_payment_id',
                     as: 'paymentDetails'
                 }
+            },
+            {
+                $lookup: {
+                    from: 'centers', // Replace with your payment collection name
+                    localField: 'centerEmail',
+                    foreignField: 'email',
+                    pipeline: [{
+                        $project: {
+                            centerName: 1,
+                            centerImg: 1
+                        }
+                    }],
+                    as: 'centers'
+                }
             }
         ]
 
