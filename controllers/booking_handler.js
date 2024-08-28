@@ -399,11 +399,11 @@ module.exports.cancelBooking = async (req, res) => {
     const id = req.body.bookingId;
 
     // Convert the string ID to a MongoDB ObjectId
-    const bookingId = await dbUtils.convertStringIdToMongooId(id);
+    const Id = await dbUtils.convertStringIdToMongooId(id);
 
     // Find the booking to check the createdAt timestamp
     const booking = await dbUtils.findOne(
-      { _id: bookingId, patientEmail: email },
+      { _id: Id, patientEmail: email },
       DATABASE_COLLECTIONS.BOOKING
     );
 
@@ -427,25 +427,18 @@ module.exports.cancelBooking = async (req, res) => {
       });
     }
 
-    // Define the update to cancel the booking
-    const update = {
-      status: DATABASE.STATUS.CANCELLLED,
-    };
-
     // Attempt to update the booking
     const updateBooking = await dbUtils.updateOne(
-      { _id: bookingId, patientEmail: email },
-      update,
+      { _id: Id, patientEmail: email },
+      {$set: {action: DATABASE.STATUS.CANCELLLED}},
       DATABASE_COLLECTIONS.BOOKING
     );
 
-    // Check if the booking was successfully updated
-    if (updateBooking.modifiedCount === 0) {
-      return res.status(400).json({
-        type: 'Error',
-        message: 'Booking could not be canceled. It may already be canceled or in a non-cancellable state.',
-      });
-    }
+    await dbUtils.updateOne(
+      { bookingId: id, patientEmail: email },
+      {$set: {status: DATABASE.STATUS.CANCELLLED}},
+      DATABASE_COLLECTIONS.ORDERED_TEST
+    );
 
     // Send success response
     res.status(200).json({

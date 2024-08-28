@@ -222,6 +222,7 @@ module.exports.getProfileController = async (req, res) => {
         // Extract user ID from request parameters
 
         const email = req.decodedToken.email;
+        const status = req?.query?.status;
 
         console.log(email);
 
@@ -234,7 +235,8 @@ module.exports.getProfileController = async (req, res) => {
         const pipeline = [
             {
                 $match: {
-                    patientEmail: email
+                    patientEmail: email,
+                    ...(status && { status })
                 }
             },
             {
