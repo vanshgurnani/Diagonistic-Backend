@@ -396,7 +396,7 @@ module.exports.uploadFilesAndUpdateBooking = async (req, res) => {
 module.exports.cancelBooking = async (req, res) => {
   try {
     const email = req.decodedToken.email;
-    const id = req.body.id;
+    const id = req.body.bookingId;
 
     // Convert the string ID to a MongoDB ObjectId
     const bookingId = await dbUtils.convertStringIdToMongooId(id);
