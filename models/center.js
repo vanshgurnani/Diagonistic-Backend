@@ -93,6 +93,9 @@ const centerSchema = new mongoose.Schema({
     isNabh: {
       type: Boolean
     },
+    termsAndCondition: {
+      type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now,
