@@ -131,11 +131,10 @@ module.exports.getBooking = async (req, res) => {
         $match: { 
           ...filter, 
           centerEmail: email,
-          createdAt: {
+          timeSlot: {
             $gte: startOfDay,
             $lte: endOfDay
           }
-
         }
       },
       {
@@ -202,11 +201,12 @@ module.exports.getBooking = async (req, res) => {
     const totalDocumentCount = result[0].totalCount;
     const totalPages = Math.ceil(totalDocumentCount / limit);
 
+    // Monthly booking count pipeline
     const monthlyBookingCountPipeline = [
       {
         $match: {
           centerEmail: email,
-          createdAt: {
+          timeSlot: {
             $gte: startOfMonth,
             $lte: endOfMonth
           }
@@ -217,6 +217,23 @@ module.exports.getBooking = async (req, res) => {
       }
     ];
 
+    // Daily booking count pipeline
+    const dailyBookingCountPipeline = [
+      {
+        $match: {
+          centerEmail: email,
+          timeSlot: {
+            $gte: startOfDay,
+            $lte: endOfDay
+          }
+        }
+      },
+      {
+        $count: "dailyCount"
+      }
+    ];
+
+    // Total rate pipeline
     const totalRatePipeline = [
       {
         $match: { centerEmail: email } // Filter by centerEmail if needed
@@ -229,15 +246,15 @@ module.exports.getBooking = async (req, res) => {
       }
     ];
 
-    
-    const monthlyCountResult = await dbUtils.aggregate(monthlyBookingCountPipeline, DATABASE_COLLECTIONS.BOOKING);
+    // Fetch counts for monthly, daily bookings and total rate
+    const [monthlyCountResult, dailyCountResult, rate] = await Promise.all([
+      dbUtils.aggregate(monthlyBookingCountPipeline, DATABASE_COLLECTIONS.BOOKING),
+      dbUtils.aggregate(dailyBookingCountPipeline, DATABASE_COLLECTIONS.BOOKING),
+      dbUtils.aggregate(totalRatePipeline, DATABASE_COLLECTIONS.BOOKING)
+    ]);
+
     const monthlyBookingCount = monthlyCountResult.length ? monthlyCountResult[0].monthlyCount : 0;
-
-    const rate = await dbUtils.aggregate(totalRatePipeline, DATABASE_COLLECTIONS.BOOKING);
-
-    console.log(rate);
-
-    // Check if any result is found
+    const dailyBookingCount = dailyCountResult.length ? dailyCountResult[0].dailyCount : 0;
     const totalRate = rate.length ? rate[0].totalRate : 0;
 
     // Send Success response with bookings data
@@ -248,6 +265,7 @@ module.exports.getBooking = async (req, res) => {
       totalRate,
       totalPages,
       monthlyBookingCount,
+      dailyBookingCount,  // New field added for daily count
       totalCount: result[0].totalCount,
       statusCounts: result[0].statusCounts,
       bookings: result[0].bookingData
@@ -257,6 +275,7 @@ module.exports.getBooking = async (req, res) => {
     res.status(500).json({ type: 'Error', message: "Internal server error." });
   }
 };
+
 
 module.exports.updateBooking = async (req, res) => {
     try {
