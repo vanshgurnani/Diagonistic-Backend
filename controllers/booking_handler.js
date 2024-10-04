@@ -125,12 +125,15 @@ module.exports.getBooking = async (req, res) => {
     const startOfDay = new Date(now.setHours(0, 0, 0, 0));
     const endOfDay = new Date(now.setHours(23, 59, 59, 999));
 
+    const action = req?.query?.action ? { action: req.query.action } : {};
+
     // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
     const pipeline = [
       {
         $match: { 
           ...filter, 
           centerEmail: email,
+          ...action,
           timeSlot: {
             $gte: startOfDay,
             $lte: endOfDay
