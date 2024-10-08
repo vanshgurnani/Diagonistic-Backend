@@ -215,85 +215,95 @@ module.exports.getTopCenters = async (req, res) => {
 // Separate handler for daily revenue and commission calculation
 module.exports.getDailyRevenueAndCommission = async (req, res) => {
     try {
-        // Extract centerName from query parameters
-        const centerName = req.query.centerName || '';
+        const centerEmail = req.query.centerEmail;
+        const filterType = req.query.type || 'daily'; // Default to 'daily' if not provided
 
-        // Define the pipeline to aggregate revenue and commission by day
+        // Get the current date
+        const now = new Date();
+
+        // Define date ranges based on the filterType
+        let startDate, endDate;
+
+        switch (filterType) {
+            case 'daily':
+                startDate = new Date(now.getFullYear(), now.getMonth()).getTime();
+                endDate = new Date(now.getFullYear(), now.getMonth()+1).getTime() - 1;
+                break;
+
+            case 'monthly':
+                // Calculate the start and end dates for the current month
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1).getTime(); // Start of the month
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() - 1; // End of the month
+                break;
+
+            case 'yearly':
+                startDate = new Date(now.getFullYear() - 5, 0, 1).getTime(); // Start 5 years ago
+                endDate = new Date(now.getFullYear() + 1, 0, 1).getTime() - 1; // End of the next year
+                break;
+
+            default:
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - 1;
+                break;
+        }
+
+        // Define the aggregation pipeline to calculate total revenue based on time period
+        let groupId;
+
+        switch (filterType) {
+            case 'daily':
+                groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Group by day
+                break;
+
+            case 'monthly':
+                groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Still group by day for monthly data
+                break;
+
+            case 'yearly':
+                groupId = { $dateToString: { format: "%Y", date: "$createdAt" } }; // Group by year
+                break;
+
+            default:
+                groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Group by day
+                break;
+        }
+
+        // Define the aggregation pipeline
         const pipeline = [
-            // Filter by centerName if provided
             {
-                $match: centerName ? { centerName: centerName } : {}
-            },
-            {
-                $lookup: {
-                    from: "bookings",
-                    localField: "email",
-                    foreignField: "centerEmail",
-                    as: "bookings"
+                $match: {
+                    centerEmail: centerEmail,
+                    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } // Filter by date range (timestamps)
                 }
             },
             {
-                $addFields: {
-                    totalBookings: { $size: "$bookings" }
+                $group: {
+                    _id: groupId, // Group by day (daily/monthly) or by year
+                    totalRevenue: { $sum: { $ifNull: ["$rate", 0] } } // Sum the rate field
                 }
             },
             {
-                $lookup: {
-                    from: "payments",
-                    let: { bookings: "$bookings" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $in: ["$razorpay_payment_id", { $map: { input: "$$bookings", as: "booking", in: "$$booking.paymentId" } }]
-                                }
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, // Group by day
-                                totalRevenue: { $sum: "$amount" }
-                            }
-                        }
-                    ],
-                    as: "dailyRevenue"
-                }
-            },
-            {
-                $unwind: "$dailyRevenue"
-            },
-            {
-                $addFields: {
-                    dailyRevenue: {
-                        totalRevenue: "$dailyRevenue.totalRevenue",
-                        commission: { $multiply: ["$dailyRevenue.totalRevenue", 0.02] }
-                    }
-                }
-            },
-            {
-                $project: {
-                    date: "$dailyRevenue._id",
-                    totalRevenue: "$dailyRevenue.totalRevenue",
-                    commission: "$dailyRevenue.commission",
-                    centerName: 1,
-                    contact: 1,
-                    ownerContact: 1
-                }
-            },
-            {
-                $sort: {
-                    "date": -1
-                }
+                $sort: { _id: 1 } // Sort by time period (ascending)
             }
         ];
 
-        // Execute the aggregate query
-        const dailyResults = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
+        // Execute the aggregate query to retrieve total revenue
+        const revenueData = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.BOOKING);
 
-        // Send Success response with daily revenue and commission data
+        // Calculate the total revenue from the aggregated data
+        const totalRevenue = revenueData.reduce((sum, record) => sum + (record.totalRevenue || 0), 0);
+
+        console.log("Start Date (Timestamp):", startDate);
+        console.log("End Date (Timestamp):", endDate);
+
+        // Send the response with total revenue
         res.status(200).json({
             type: 'Success',
-            data: dailyResults
+            totalRevenue,
+            timePeriod: filterType,
+            startDate: new Date(startDate), // Return as human-readable dates if needed
+            endDate: new Date(endDate), // Return as human-readable dates if needed
+            revenueData
         });
     } catch (error) {
         console.error(`[getDailyRevenueAndCommission] Error occurred: ${error.message}`);
@@ -302,3 +312,8 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
         });
     }
 };
+
+
+
+
+
