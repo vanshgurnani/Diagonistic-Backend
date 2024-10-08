@@ -50,7 +50,8 @@ module.exports.createCenter = async(req,res) =>{
             { property: "address", optional: false },
             { property: "staffNumber", optional: false },
             { property: "otp", optional: false },
-            { property: "termsAndCondition", optional: false }
+            { property: "termsAndCondition", optional: false },
+            { property: "centerContact", optional: false }
 
 
         ];
@@ -68,7 +69,8 @@ module.exports.createCenter = async(req,res) =>{
             address,
             staffNumber,
             otp,
-            termsAndCondition
+            termsAndCondition,
+            centerContact
         } = payload;
 
         const pipline = [
@@ -186,7 +188,8 @@ module.exports.createCenter = async(req,res) =>{
             isIso: !!uploadedFiles.iso,
             isNabl: !!uploadedFiles.nabl,
             isNabh: !!uploadedFiles.nabh,
-            termsAndCondition
+            termsAndCondition,
+            centerContact
 
         }
 
