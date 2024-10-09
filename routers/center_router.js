@@ -48,6 +48,9 @@ router.post('/login', Center.loginHandler);
 
 router.put('/profile', JwtService.validateJwt , uploadFields , Center.updateProfile);
 
+router.get('/name', Center.getCenterName);
+
+
 
 
 

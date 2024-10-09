@@ -454,3 +454,26 @@ module.exports.updateProfile = async(req, res) => {
         res.status(500).json({ type: 'Error', message: "Failed to update center." });
     }
 };
+
+module.exports.getCenterName = async(req, res) => {
+    try{
+        const center = await dbUtils.findMany(
+            {},
+            DATABASE_COLLECTIONS.CENTER,
+            {
+                _id: 0,
+                centerName: 1,
+                email: 1
+            }
+        )
+
+        res.status(200).json({
+            type: 'Success',
+            center
+        });
+
+    } catch (error) {
+        console.error(`[getCenterName] Error occurred: ${error}`);
+        res.status(500).json({ type: 'Error', message: "Internal server error." });
+    }
+};

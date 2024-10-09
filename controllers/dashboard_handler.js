@@ -231,9 +231,8 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
                 break;
 
             case 'monthly':
-                // Calculate the start and end dates for the current month
-                startDate = new Date(now.getFullYear(), now.getMonth(), 1).getTime(); // Start of the month
-                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() - 1; // End of the month
+                startDate = new Date(now.getFullYear(), 0, 1).getTime(); // Start of the current year
+                endDate = new Date(now.getFullYear() + 1, 0, 1).getTime() - 1; // End of the current year
                 break;
 
             case 'yearly':
@@ -256,7 +255,7 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
                 break;
 
             case 'monthly':
-                groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Still group by day for monthly data
+                groupId = { $dateToString: { format: "%Y-%m", date: "$createdAt" } }; // Still group by day for monthly data
                 break;
 
             case 'yearly':
@@ -279,7 +278,8 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
             {
                 $group: {
                     _id: groupId, // Group by day (daily/monthly) or by year
-                    totalRevenue: { $sum: { $ifNull: ["$rate", 0] } } // Sum the rate field
+                    totalRevenue: { $sum: { $ifNull: ["$rate", 0] } }, // Sum the rate field
+                    totalBooking: { $sum: 1 }
                 }
             },
             {
@@ -289,6 +289,16 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
 
         // Execute the aggregate query to retrieve total revenue
         const revenueData = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.BOOKING);
+
+        const count = await dbUtils.findMany(
+            {
+                centerEmail: centerEmail,
+                createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) }
+            },
+            DATABASE_COLLECTIONS.BOOKING
+        );
+
+        const totalCount = count.length;
 
         // Calculate the total revenue from the aggregated data
         const totalRevenue = revenueData.reduce((sum, record) => sum + (record.totalRevenue || 0), 0);
@@ -301,6 +311,7 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
             type: 'Success',
             totalRevenue,
             timePeriod: filterType,
+            totalBooking: totalCount,
             startDate: new Date(startDate), // Return as human-readable dates if needed
             endDate: new Date(endDate), // Return as human-readable dates if needed
             revenueData
