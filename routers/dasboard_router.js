@@ -10,5 +10,8 @@ router.get("/top", dashboardHandler.getTopCenters);
 router.get("/daily", dashboardHandler.getDailyRevenueAndCommission);
 
 
+router.get("/monthly", dashboardHandler.getMonthlyCommissionOverall);
+
+
 
 module.exports = router;

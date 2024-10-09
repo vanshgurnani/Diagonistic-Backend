@@ -330,6 +330,55 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
 };
 
 
+module.exports.getMonthlyCommissionOverall = async (req, res) => {
+    try {
+        const now = new Date();
+
+        // Define the date range for the current year
+        const startDate = new Date(now.getFullYear(), 0, 1); // Start of the year
+        const endDate = new Date(now.getFullYear() + 1, 0, 1); // Start of next year
+
+        // Define the aggregation pipeline
+        const pipeline = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lt: endDate } // Filter by date range (timestamps)
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, // Group by month
+                    totalCommission: { $sum: { $multiply: [{ $ifNull: ["$rate", 0] }, 0.02] } }, // Calculate commission
+                    totalBookings: { $sum: 1 } // Count total bookings
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by month (ascending)
+            }
+        ];
+
+        // Execute the aggregate query to retrieve total commission
+        const commissionData = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.BOOKING);
+
+        // Calculate the overall commission
+        const overallCommission = commissionData.reduce((sum, record) => sum + (record.totalCommission || 0), 0);
+
+        // Send the response with overall commission
+        res.status(200).json({
+            type: 'Success',
+            overallCommission,
+            timePeriod: 'monthly',
+            startDate: startDate, // Return as human-readable dates if needed
+            endDate: endDate, // Return as human-readable dates if needed
+            commissionData
+        });
+    } catch (error) {
+        console.error(`[getMonthlyCommissionOverall] Error occurred: ${error.message}`);
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
 
 
 
