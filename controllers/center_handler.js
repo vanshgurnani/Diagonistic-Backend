@@ -224,6 +224,8 @@ module.exports.getCenter = async (req, res) => {
             password: 0
         };
 
+        const testDetailsSort = req?.query?.testDetailsSort ? JSON.parse(req.query.testDetailsSort) : { createdAt: -1 };
+
         // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
         const pipeline = [
             {
@@ -237,7 +239,7 @@ module.exports.getCenter = async (req, res) => {
                     as: 'testDetails', // The name of the array field to add
                     pipeline: [
                         { $match: { TestName: new RegExp(testName, 'i') } },
-                        { $sort: { createdAt: -1 } },
+                        { $sort: testDetailsSort },
                         { $limit: limit },
                         {
                             $project: {
