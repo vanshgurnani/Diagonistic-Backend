@@ -62,35 +62,22 @@ module.exports.dashboardGet = async (req, res) => {
             },
             {
                 $addFields: {
-                    totalBookings: { $size: "$bookings" }
-                }
-            },
-            {
-                $lookup: {
-                    from: "payments",
-                    let: { bookings: "$bookings" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $in: ["$razorpay_payment_id", { $map: { input: "$$bookings", as: "booking", in: "$$booking.paymentId" } }]
-                                }
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: null,
-                                totalRevenue: { $sum: "$amount" }
+                    totalBookings: { $size: "$bookings" },
+                    // Calculate totalRevenue from the sum of the 'rate' field in 'bookings'
+                    totalRevenue: {
+                        $sum: {
+                            $map: {
+                                input: "$bookings",
+                                as: "booking",
+                                in: { $ifNull: ["$$booking.rate", 0] } // Sum the rate field
                             }
                         }
-                    ],
-                    as: "revenue"
+                    }
                 }
             },
             {
                 $addFields: {
-                    totalRevenue: { $ifNull: [{ $arrayElemAt: ["$revenue.totalRevenue", 0] }, 0] },
-                    commission: { $multiply: [{ $ifNull: [{ $arrayElemAt: ["$revenue.totalRevenue", 0] }, 0] }, 0.02] }
+                    commission: { $multiply: ["$totalRevenue", 0.02] } // Calculate commission as 2% of total revenue
                 }
             },
             {
@@ -105,6 +92,7 @@ module.exports.dashboardGet = async (req, res) => {
             }
         ];
 
+        
         // Execute the aggregate query
         let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
 
@@ -279,7 +267,8 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
                 $group: {
                     _id: groupId, // Group by day (daily/monthly) or by year
                     totalRevenue: { $sum: { $ifNull: ["$rate", 0] } }, // Sum the rate field
-                    totalBooking: { $sum: 1 }
+                    totalBooking: { $sum: 1 },
+                    commission: { $sum: { $multiply: [{ $ifNull: ["$rate", 0] }, 0.02] } }
                 }
             },
             {
