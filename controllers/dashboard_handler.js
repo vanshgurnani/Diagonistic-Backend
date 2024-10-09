@@ -238,8 +238,11 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
                 break;
 
             default:
-                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - 1;
+                startDate = new Date(req.query.startDate);
+                endDate = new Date(req.query.endDate);
+                if (isNaN(startDate) || isNaN(endDate)) {
+                    return res.status(400).json({ error: 'Invalid start or end date' });
+                }
                 break;
         }
 
@@ -264,7 +267,7 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
                 break;
                 
             default:
-                groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Group by day
+                groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Group by day for custom
                 break;
         }
 
