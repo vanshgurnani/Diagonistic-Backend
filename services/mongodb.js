@@ -9,6 +9,7 @@ const center_otp = require("../models/center_otp");
 const order_test = require("../models/ordered_test");
 const payment = require("../models/payment");
 const center_verify = require("../models/center_verify");
+const query = require("../models/query");
 class DBService {
     constructor() {
         console.log(`Initializing database connection.`);

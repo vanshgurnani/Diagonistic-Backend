@@ -10,7 +10,8 @@
             "CENTER_OTPS": "center-otp",
             "CENTER_VERIFY": "center-verify",
             "ORDERED_TEST": "ordered-test",
-            "PAYMENT": "payment"
+            "PAYMENT": "payment",
+            "QUERY": "query"
         },
         "STATUS": {
             "ACTIVE": "ACTIVE",
