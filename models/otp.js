@@ -39,7 +39,7 @@ const otpSchema = new Schema({
 
 const mailVerification = async (email, otp) => {
     try {
-        const emailSubject = "Portfolioo OTP for Verification";
+        const emailSubject = "DiagnoWeb OTP for Verification";
         const emailText = null;
         const html = CommonUtils.sendOtpEmailTemplate(otp, "otp verification");
 

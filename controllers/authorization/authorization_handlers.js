@@ -504,7 +504,7 @@ module.exports.createResetPasswordToken = async (req, res) => {
 
         const url = `${process.env.FRONTEND_URL}/update-password/${token}`;
         const html = commonUtils.passwordResetEmailTemplate(url);
-        const emailSubject = "Portfolioo Update Password";
+        const emailSubject = "DiagnoWeb Update Password";
         const emailText = null;
 
         await emailService.sendMail(email, emailSubject, emailText, html);
