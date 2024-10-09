@@ -6,27 +6,29 @@ const JwtService = require("../services/jwt");
 const path = require("path");
 const passport = require("../utils/google_stratergy");
 
-const multer = require("multer");
-const storage = multer.memoryStorage();
+const multer = require('multer');
 const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        const allowedFileTypes = /jpeg|jpg|png|webp/;
-        const extname = allowedFileTypes.test(
-            path.extname(file.originalname).toLowerCase()
-        );
-        const mimetype = allowedFileTypes.test(file.mimetype);
-        if (mimetype && extname) {
-            return cb(null, true);
-        } else {
-            cb(
-                new Error(
-                    "Invalid file type. Only JPEG, JPG, and PNG files are allowed."
-                )
-            );
-        }
-    },
+    storage: multer.memoryStorage()
 });
+// const upload = multer({
+//     storage: storage,
+//     fileFilter: (req, file, cb) => {
+//         const allowedFileTypes = /jpeg|jpg|png|webp/;
+//         const extname = allowedFileTypes.test(
+//             path.extname(file.originalname).toLowerCase()
+//         );
+//         const mimetype = allowedFileTypes.test(file.mimetype);
+//         if (mimetype && extname) {
+//             return cb(null, true);
+//         } else {
+//             cb(
+//                 new Error(
+//                     "Invalid file type. Only JPEG, JPG, and PNG files are allowed."
+//                 )
+//             );
+//         }
+//     },
+// });
 
 // Define routes
 router.post("/login", auth.loginHandler);

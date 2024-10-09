@@ -32,5 +32,8 @@
     "razorpay": "^2.9.4",
     "serverless-http": "^3.2.0",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/multer": "^1.4.12"
   }
 }
