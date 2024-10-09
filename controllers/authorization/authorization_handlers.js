@@ -578,18 +578,21 @@ async function uploadImages(files, email) {
 
     if (files && files.profileImgUrl) {
         const fileKey = `${email}-profile.jpeg`;
-        const params = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: fileKey,
-            Body: files.profileImgUrl[0].buffer,
-            ContentType: files.profileImgUrl[0].mimetype,
+
+        // Prepare the file object to be passed to the upload function
+        const file = {
+            buffer: files.profileImgUrl[0].buffer,
+            mimetype: files.profileImgUrl[0].mimetype
         };
-        const uploadResult = await s3Utils.uploadFileToS3(params);
+
+        // Call the upload function
+        const uploadResult = await s3Utils.uploadFileToS3(file, fileKey, process.env.AWS_BUCKET_NAME);
         uploadedImages.profileImgUrl = uploadResult.Location;
     }
 
     return uploadedImages;
 }
+
 
 module.exports.getAllUsers = async (req, res) => {
     try {
