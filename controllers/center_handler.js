@@ -146,7 +146,7 @@ module.exports.createCenter = async(req,res) =>{
 
         const newCenterVerify = {
             centerName: centerName,
-            centerContact: contact,
+            centerContact: ownerContact,
             ownerFirstName: firstName,
             ownerLastName: lastName,
             ownerEmail: email,
