@@ -281,7 +281,8 @@ module.exports.getProfileController = async (req, res) => {
                     pipeline: [{
                         $project: {
                             _id: 0,
-                            preferredDoctorName: 1
+                            preferredDoctorName: 1,
+                            timeSlot: 1
 
                         }
                     }],
