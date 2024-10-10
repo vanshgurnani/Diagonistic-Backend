@@ -278,14 +278,6 @@ module.exports.getProfileController = async (req, res) => {
                     from: 'bookings',
                     localField: 'bookingId',
                     foreignField: '_id',
-                    pipeline: [{
-                        $project: {
-                            _id: 0,
-                            preferredDoctorName: 1,
-                            timeSlot: 1
-
-                        }
-                    }],
                     as: 'bookings'
                 }
             },
