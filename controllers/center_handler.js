@@ -199,6 +199,7 @@ module.exports.createCenter = async(req,res) =>{
     }
     catch(error){
         console.error(`[CenterController] Error occurred: ${error}`);
+        await dbUtils.deleteOne({ email: email }, DATABASE_COLLECTIONS.CENTER_OTPS);
         res.status(500).json({ type: 'Error', message: "Failed to create center." });
     }
 };
