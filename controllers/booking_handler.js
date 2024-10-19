@@ -462,6 +462,24 @@ module.exports.cancelBooking = async (req, res) => {
       DATABASE_COLLECTIONS.ORDERED_TEST
     );
 
+    const dateObj = new Date(booking.timeSlot);
+    const date = dateObj.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    const time = dateObj.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    const emailSubject = "DiagnoWeb Cancelled Confirmation";
+
+    const html = template.sendBookingCancellationEmailTemplate(emailSubject, booking, date, time);
+      
+    await emailService.sendMail(booking.patientEmail, emailSubject, null, html);
+
+
     // Send success response
     res.status(200).json({
       type: 'Success',

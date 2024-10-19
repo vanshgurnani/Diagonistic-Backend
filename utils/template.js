@@ -56,3 +56,35 @@ module.exports.sendBookingConfirmationEmailTemplate = (title, booking , date , t
 </body>
 </html>
 `;
+
+module.exports.sendBookingCancellationEmailTemplate = (title, booking, date, time) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+</head>
+<body style="background-color: #ffffff; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.4; color: #333333; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;">
+        <h2 style="background-color: #FAD02E; color: black; padding: 10px; border-radius: 5px; max-width: 200px; margin: 15px auto;">Diagnostic</h2>
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">${title}</div>
+        <div style="font-size: 16px; margin-bottom: 20px;">
+            <p>Dear ${booking.patientName},</p>
+            <p>We regret to inform you that your recent test appointment has been canceled. Below are the details of the canceled booking:</p>
+            <p><strong>Patient Name:</strong> ${booking.patientName}</p>
+            <p><strong>Test Name:</strong> ${booking.testName}</p>
+            <p><strong>Preferred Doctor:</strong> ${booking.preferredDoctorName}</p>
+            <p><strong>Original Appointment Date:</strong> ${date}</p>
+            <p><strong>Original Appointment Time:</strong> ${time}</p>
+            <p>We understand that cancellations can be inconvenient, and we apologize for any disruption this may have caused. If you'd like to reschedule or if you have any concerns, please don't hesitate to reach out to us at <a href="mailto:contact@blackcheriemedia.com">contact@blackcheriemedia.com</a>.</p>
+            <p>Thank you for your understanding, and we hope to serve you in the future.</p>
+        </div>
+        <div style="font-size: 14px; color: #999999; margin-top: 20px;">
+            Best regards,<br>
+            DiagnoWeb Team
+        </div>
+    </div>
+</body>
+</html>
+`;
