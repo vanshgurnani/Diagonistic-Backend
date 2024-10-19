@@ -203,7 +203,7 @@ module.exports.createCenter = async(req,res) =>{
     }
 };
 
-module.exports.getCenter = async (req, res) => {
+module.exports.getCenter = async (req, res) => {c
     try {
         // Extract filter, sort, limit, page, testName, and address from the request query
         const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
