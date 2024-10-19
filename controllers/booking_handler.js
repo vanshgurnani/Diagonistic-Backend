@@ -282,7 +282,7 @@ module.exports.getBooking = async (req, res) => {
 
 module.exports.updateBooking = async (req, res) => {
     try {
-        const bookingId = req.body.id; // Get booking ID from request parameters
+        const bookingId = await dbUtils.convertStringIdToMongooId(req.body.id); // Get booking ID from request parameters
         const updates = req.body; // Get updates from request body
       
         console.log(bookingId);
