@@ -239,7 +239,7 @@ module.exports.getBooking = async (req, res) => {
     // Total rate pipeline
     const totalRatePipeline = [
       {
-        $match: { centerEmail: email } // Filter by centerEmail if needed
+        $match: { centerEmail: email, action: "VISITED" } // Filter by centerEmail if needed
       },
       {
         $group: {
