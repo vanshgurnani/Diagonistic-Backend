@@ -281,74 +281,71 @@ module.exports.getBooking = async (req, res) => {
 
 
 module.exports.updateBooking = async (req, res) => {
-    try {
-        const bookingId = await dbUtils.convertStringIdToMongooId(req.body.id); // Get booking ID from request parameters
-        const updates = req.body; // Get updates from request body
+  try {
+      const bookingId = await dbUtils.convertStringIdToMongooId(req.body.id); // Get booking ID from request parameters
+      const updates = req.body; // Get updates from request body
       
-        console.log(bookingId);
+      console.log(bookingId);
 
-        const files = req.files ? req.files.files : [];
+      // Ensure that req.files exists and that files is an array
+      const files = req.files && Array.isArray(req.files.files) ? req.files.files : [];
 
-        let uploadedFiles = [];
-        if (files.length > 0) {
-            // Upload files and get URLs
-            uploadedFiles = await Promise.all(
-                files.map(async (file, index) => {
-                    const fileName = `${bookingId}-file-${index + 1}.${file.originalname.split('.').pop()}`;
-                    console.log(`Uploading file ${fileName} to S3...`);
-                    const fileUrl = await s3Utils.uploadFileToS3(file, fileName, process.env.AWS_BUCKET_NAME);
-                    return fileUrl.Location;
-                })
-            );
-        }
+      let uploadedFiles = [];
+      if (files.length > 0) {
+          // Upload files and get URLs
+          uploadedFiles = await Promise.all(
+              files.map(async (file, index) => {
+                  const fileName = `${bookingId}-file-${index + 1}.${file.originalname.split('.').pop()}`;
+                  console.log(`Uploading file ${fileName} to S3...`);
+                  const fileUrl = await s3Utils.uploadFileToS3(file, fileName, process.env.AWS_BUCKET_NAME);
+                  return fileUrl.Location;
+              })
+          );
+      }
 
-        // Add the uploaded file URLs to the updates if there are any
-        if (uploadedFiles.length > 0) {
-            updates.report = uploadedFiles;
-        }
+      // Add the uploaded file URLs to the updates if there are any
+      if (uploadedFiles.length > 0) {
+          updates.report = uploadedFiles;
+      }
 
-        const booking = await dbUtils.findOne(
-          { _id: bookingId },
-          DATABASE_COLLECTIONS.BOOKING
-        )
+      const booking = await dbUtils.findOne(
+        { _id: bookingId },
+        DATABASE_COLLECTIONS.BOOKING
+      );
 
-        // Update the booking record in the database
-        const result = await dbUtils.updateOne({ _id: bookingId }, updates, DATABASE_COLLECTIONS.BOOKING);
+      // Update the booking record in the database
+      const result = await dbUtils.updateOne({ _id: bookingId }, updates, DATABASE_COLLECTIONS.BOOKING);
 
-        if(updates.action === "VISITED") {
-
-          const ordered = await dbUtils.updateOne({ bookingId: bookingId }, { $set: { status: DATABASE.STATUS.PREVIOUS  } }, DATABASE_COLLECTIONS.ORDERED_TEST);
+      if (updates.action === "VISITED") {
+          const ordered = await dbUtils.updateOne({ bookingId: bookingId }, { $set: { status: DATABASE.STATUS.PREVIOUS } }, DATABASE_COLLECTIONS.ORDERED_TEST);
 
           const dateObj = new Date(booking.timeSlot);
           const date = dateObj.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
           });
           const time = dateObj.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit'
+              hour: '2-digit',
+              minute: '2-digit'
           });
 
           const emailSubject = "DiagnoWeb Visited Confirmation";
 
           const html = template.sendBookingConfirmationEmailTemplate(emailSubject, booking, date, time);
-      
+
           await emailService.sendMail(booking.patientEmail, emailSubject, null, html);
 
-          
-
           console.log(`Ordered tests updated: ${ordered}`);
+      }
 
-        }
-        
-
-        res.status(200).json({ type: 'Success', message: "Booking updated successfully.", result});
-    } catch (error) {
-        console.error(`[updateBooking] Error occurred: ${error}`);
-        res.status(500).json({ type: 'Error', message: "Failed to update booking." });
-    }
+      res.status(200).json({ type: 'Success', message: "Booking updated successfully.", result });
+  } catch (error) {
+      console.error(`[updateBooking] Error occurred: ${error}`);
+      res.status(500).json({ type: 'Error', message: "Failed to update booking." });
+  }
 };
+
 
 module.exports.deleteBooking = async (req, res) => {
     try {
