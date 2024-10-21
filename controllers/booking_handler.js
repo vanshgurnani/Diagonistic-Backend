@@ -134,10 +134,12 @@ module.exports.getBooking = async (req, res) => {
           ...filter, 
           centerEmail: email,
           ...action,
-          timeSlot: {
-            $gte: startOfDay,
-            $lte: endOfDay
-          }
+          ...(req.query.action !== 'VISITED' ? { 
+            timeSlot: {
+              $gte: startOfDay,
+              $lte: endOfDay
+            }
+          } : {}) // Apply timeSlot filter only if action is not "VISITED"
         }
       },
       {
@@ -182,6 +184,7 @@ module.exports.getBooking = async (req, res) => {
         }
       }
     ];
+    
 
     // Execute the aggregate query
     let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.BOOKING);
