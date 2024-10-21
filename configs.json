@@ -23,7 +23,9 @@
             "REJECTED" : "REJECTED",
             "ONGOING": "ONGOING",
             "PREVIOUS": "PREVIOUS",
-            "CANCELLLED": "CANCELLED"
+            "CANCELLLED": "CANCELLED",
+            "REFUNDED": "REFUNDED",
+            "NOT_REFUNDED": "NOT-REFUNDED"
         },
 
         "ROLES": {
