@@ -8,4 +8,6 @@ const jwtService = require("../services/jwt");
 router.post('/query', jwtService.validateJwt, feature.createQuery);
 router.get('/query', feature.getQuery);
 
+router.get('/refund', feature.getCancel);
+
 module.exports = router;

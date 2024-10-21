@@ -85,3 +85,41 @@ module.exports.getQuery = async (req, res) => {
         res.status(500).json({ type: 'Error', message: "Failed to retrieve queries." });
     }
 };
+
+module.exports.getCancel = async (req, res) => {
+    try{
+      // Extract filter, sort, limit, and page from the request query
+      const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
+      const sort = req?.query?.sort ? JSON.parse(req.query.sort) : { createdAt: -1 };
+      const limit = req?.query?.limit ? parseInt(req.query.limit) : 3;
+      const page = req?.query?.page ? parseInt(req.query.page) : 1;
+      const skip = (page - 1) * limit;
+  
+      const pipeline = [
+        {
+          $match: {
+            action: DATABASE.STATUS.CANCELLLED
+          }
+        },
+        { $sort: sort },
+        { $skip: skip },
+        { $limit: limit }
+      ]
+  
+      const result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.BOOKING);
+      console.log(result);
+  
+      res.json({
+        type: 'Success',
+        page,
+        limit,
+        bookings: result
+      })
+    } catch (error) {
+      console.error(`[getCancel] Error occurred: ${error}`);
+      res.status(500).json({
+        type: 'Error',
+        message: 'An unexpected error occurred. Please try again later.',
+      });
+    }
+};

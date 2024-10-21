@@ -44,6 +44,11 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         enum: [DATABASE.STATUS.ACCEPTED , DATABASE.STATUS.REJECTED , DATABASE.STATUS.PENDING, DATABASE.STATUS.CANCELLLED], // Possible actions for the booking
         default: DATABASE.STATUS.PENDING
+    } , 
+    status: {
+        type: String,
+        enum: [DATABASE.STATUS.ACTIVE , DATABASE.STATUS.INACTIVE], // Possible actions for the booking
+        default: DATABASE.STATUS.ACTIVE
     } ,   
     report : {
         type : [String],
