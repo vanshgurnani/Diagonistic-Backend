@@ -57,6 +57,13 @@ module.exports.dashboardGet = async (req, res) => {
                     from: "bookings",
                     localField: "email",
                     foreignField: "centerEmail",
+                    pipeline: [
+                        {
+                            $match: {
+                                status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
+                            }
+                        }
+                    ],
                     as: "bookings"
                 }
             },
@@ -145,6 +152,13 @@ module.exports.getTopCenters = async (req, res) => {
                     from: "bookings",
                     localField: "email",
                     foreignField: "centerEmail",
+                    pipeline: [
+                        {
+                            $match: {
+                                status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
+                            }
+                        }
+                    ],
                     as: "bookings"
                 }
             },
