@@ -60,7 +60,7 @@ module.exports.dashboardGet = async (req, res) => {
                     pipeline: [
                         {
                             $match: {
-                                status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
+                                action: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
                             }
                         }
                     ],
@@ -155,7 +155,7 @@ module.exports.getTopCenters = async (req, res) => {
                     pipeline: [
                         {
                             $match: {
-                                status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
+                                action: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
                             }
                         }
                     ],
@@ -291,7 +291,7 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
                 $match: {
                     centerEmail: centerEmail,
                     createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },
-                    status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED } 
+                    action: { $ne: configs.CONSTANTS.STATUS.CANCELLLED } 
                 }
             },
             {
@@ -314,7 +314,7 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
             {
                 centerEmail: centerEmail,
                 createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },
-                status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
+                action: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
             },
             DATABASE_COLLECTIONS.BOOKING
         );
@@ -359,7 +359,7 @@ module.exports.getMonthlyCommissionOverall = async (req, res) => {
             {
                 $match: {
                     createdAt: { $gte: startDate, $lt: endDate },
-                    status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
+                    action: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
                 }
             },
             {
