@@ -276,7 +276,8 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
             {
                 $match: {
                     centerEmail: centerEmail,
-                    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } // Filter by date range (timestamps)
+                    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },
+                    status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED } 
                 }
             },
             {
@@ -298,7 +299,8 @@ module.exports.getDailyRevenueAndCommission = async (req, res) => {
         const count = await dbUtils.findMany(
             {
                 centerEmail: centerEmail,
-                createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) }
+                createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },
+                status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
             },
             DATABASE_COLLECTIONS.BOOKING
         );
@@ -342,7 +344,8 @@ module.exports.getMonthlyCommissionOverall = async (req, res) => {
         const pipeline = [
             {
                 $match: {
-                    createdAt: { $gte: startDate, $lt: endDate } // Filter by date range (timestamps)
+                    createdAt: { $gte: startDate, $lt: endDate },
+                    status: { $ne: configs.CONSTANTS.STATUS.CANCELLLED }
                 }
             },
             {
