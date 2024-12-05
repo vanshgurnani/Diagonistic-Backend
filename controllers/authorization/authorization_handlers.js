@@ -614,3 +614,64 @@ module.exports.getAllUsers = async (req, res) => {
     }
 };
 
+
+module.exports.deleteAccount = async (req, res) => {
+    try {
+        // Extract email from authenticated user's token
+        const email = req.decodedToken?.email;
+
+        if (!email) {
+            return res.status(401).json({
+                error: "Unauthorized. No email found in token.",
+            });
+        }
+
+        // Check if the user exists
+        const user = await dbUtils.findOne({ email }, DATABASE_COLLECTIONS.USERS);
+
+        if (!user) {
+            return res.status(404).json({
+                error: `No account found for the email: ${email}`,
+            });
+        }
+
+        // Delete the user's account
+        const deletedUser = await dbUtils.deleteOne({ email }, DATABASE_COLLECTIONS.USERS);
+
+        if (!deletedUser?.deletedCount) {
+            return res.status(500).json({
+                error: "Failed to delete the account. Please try again.",
+            });
+        }
+
+        await dbUtils.deleteMany(
+            {email: email},
+            DATABASE_COLLECTIONS.TEST
+        );
+
+        await dbUtils.deleteMany(
+            {centerEmail: email},
+            DATABASE_COLLECTIONS.ORDERED_TEST
+        );
+
+        await dbUtils.deleteMany(
+            {email: email},
+            DATABASE_COLLECTIONS.CENTER
+        );
+
+        await dbUtils.deleteMany(
+            {centerEmail: email},
+            DATABASE_COLLECTIONS.BOOKING
+        );
+
+
+        return res.status(200).json({
+            message: `Account with email ${email} has been successfully deleted.`,
+        });
+    } catch (error) {
+        console.error(`[deleteAccount] Error occurred: ${error.message}`);
+        return res.status(500).json({
+            error: "An error occurred while trying to delete the account.",
+        });
+    }
+};

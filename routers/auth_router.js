@@ -64,4 +64,7 @@ router.post("/forgot-password", auth.resetPassword);
 router.post("/forgot-password-token", auth.createResetPasswordToken);
 router.get("/all" , auth.getAllUsers);
 
+router.delete("/delete", JwtService.validateJwt, auth.deleteAccount);
+
+
 module.exports = router;
