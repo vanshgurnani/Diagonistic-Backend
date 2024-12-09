@@ -246,7 +246,9 @@ module.exports.getCenter = async (req, res) => {
                             $project: {
                                 _id: 0,
                                 TestName: 1,
-                                finalPrice: 1
+                                finalPrice: 1,
+                                rate: 1,
+                                discount: 1
                             }
                         }
                     ]
