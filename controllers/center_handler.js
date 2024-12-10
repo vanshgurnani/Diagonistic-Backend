@@ -46,11 +46,11 @@ module.exports.createCenter = async(req,res) =>{
             { property: "firstName", optional: true },
             { property: "lastName", optional: true },
             { property: "ownerContact", optional: true },
-            { property: "centerGST", optional: false },
+            { property: "centerGST", optional: true },
             { property: "address", optional: false },
             { property: "staffNumber", optional: false },
             { property: "otp", optional: false },
-            { property: "termsAndCondition", optional: false },
+            { property: "termsAndCondition", optional: true },
             { property: "centerContact", optional: false }
 
 
