@@ -344,5 +344,42 @@ module.exports.updateTestCategory = async (req, res) => {
     }
 };
   
+module.exports.getAllDistinctCategories = async (req, res) => {
+    try {
+        const email = req.decodedToken.email;
+        // Define the pipeline to get distinct categories
+        const pipeline = [
+            {
+                $match: { email: email }
+            },
+            {
+                $group: {
+                    _id: "$Category" // Group by Category field
+                }
+            },
+            {
+                $project: {
+                    _id: 0,          // Exclude the _id field in the response
+                    Category: "$_id" // Rename _id to Category
+                }
+            }
+        ];
+
+        // Execute the aggregation pipeline
+        const distinctCategories = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.TEST);
+
+        // Respond with the distinct categories
+        res.status(200).json({
+            type: "Success",
+            distinctCategories
+        });
+    } catch (error) {
+        console.error(`[getAllDistinctCategories] Error: ${error}`);
+        res.status(500).json({
+            type: "Error",
+            message: "Failed to fetch distinct categories."
+        });
+    }
+};
 
 

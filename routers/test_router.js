@@ -37,5 +37,8 @@ router.get('/all', Test.getAllTest);
 
 router.put('/category', Test.updateTestCategory);
 
+router.get('/category', jwtService.validateJwt , Test.getAllDistinctCategories);
+
+
 
 module.exports = router;
