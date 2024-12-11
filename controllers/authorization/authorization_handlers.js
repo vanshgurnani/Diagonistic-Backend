@@ -308,57 +308,95 @@ module.exports.getProfileController = async (req, res) => {
     }
 };
 
+const handleFileUpload = async (file, userId, fieldName) => {
+    if (!file) return null;
+
+    const fileName = `${userId}-${fieldName}.${file.originalname.split(".").pop()}`;
+    const imageUrl = await s3Utils.uploadFileToS3(file, fileName, process.env.AWS_BUCKET_NAME);
+    
+    return imageUrl.Location;
+};
+
+
 module.exports.updateProfileHandler = async (req, res) => {
     try {
         // Extract userId from decoded token
         const userId = req.decodedToken.id;
-
+        
         // Fetch updated profile data from request body
         let updatedProfileData = req.body;
 
+        const files = req.files || {};
+
+        const fileFields = [
+            'addressProof',
+            'shopAct',
+            'pcpndt',
+            'iso',
+            'nabl',
+            'nabh',
+            'centerImg',
+            'profileImgUrl',
+        ];
+
         // Check if a file is uploaded
-        if (req.file) {
-            const file = req.file;
-            const fileName = `${userId}.${file.originalname.split(".").pop()}`;
-            const imageUrl = await s3Utils.uploadFileToS3(
-                file,
-                fileName,
-                process.env.AWS_BUCKET_NAME
-            );
-            updatedProfileData.profileImgUrl = imageUrl.Location;
+        for (let field of fileFields) {
+            if (files[field] && files[field].length > 0) {
+                const file = files[field][0]; // Since you only allow 1 file per field, we'll take the first file
+                const imageUrl = await handleFileUpload(file, userId, field);
+                if (imageUrl) {
+                    updatedProfileData[field] = imageUrl; // Update the field with the image URL directly
+                }
+            }
         }
 
-        // Define query to find user profile based on userId
-        const query = { _id: userId };
+        // Check if the userId belongs to a user or a center
+        let collectionToUpdate;
+        let profile;
 
-        // Update user profile in the database
+        // First, try to find the user in the USERS collection
+        profile = await dbUtils.findOne({ _id: userId }, DATABASE_COLLECTIONS.USERS);
+        if (profile) {
+            collectionToUpdate = DATABASE_COLLECTIONS.USERS;
+        } else {
+            // If not found in USERS, try to find the profile in the CENTERS collection
+            profile = await dbUtils.findOne({ _id: userId }, DATABASE_COLLECTIONS.CENTER);
+            if (profile) {
+                collectionToUpdate = DATABASE_COLLECTIONS.CENTER;
+            }
+        }
+
+        // If the profile is not found in either collection, return an error
+        if (!profile) {
+            return res.status(404).json({
+                type: "Error",
+                error: "User or Center profile not found.",
+            });
+        }
+
+        // Update the profile in the respective collection
         const updatedProfile = await dbUtils.updateOne(
-            query,
+            { _id: userId },
             updatedProfileData,
-            DATABASE_COLLECTIONS.USERS
+            collectionToUpdate
         );
 
-        // Check if profile was successfully updated
-        if (updatedProfile) {
-            res.status(200).json({
-                type: "Success",
-                message: "Profile updated successfully.",
-                data: updatedProfileData,
-            });
-        } else {
-            res.status(404).json({
-                type: "Error",
-                error: "User profile not found or could not be updated.",
-            });
-        }
+        // Respond with success message
+        res.status(200).json({
+            type: "Success",
+            message: "Profile updated successfully.",
+            data: updatedProfileData,
+        });
+
     } catch (error) {
-        console.error(`Error occurred while updating user profile: ${error}`);
+        console.error(`Error occurred while updating profile: ${error}`);
         res.status(500).json({
             type: "Error",
             error: "Internal server error.",
         });
     }
 };
+
 
 module.exports.findDistanceController = async (req, res) => {
     try {

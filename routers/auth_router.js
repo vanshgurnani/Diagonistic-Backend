@@ -10,6 +10,19 @@ const multer = require('multer');
 const upload = multer({
     storage: multer.memoryStorage()
 });
+
+const uploadFields = upload.fields([
+    { name: 'addressProof', maxCount: 1 },
+    { name: 'shopAct', maxCount: 1 },
+    { name: 'pcpndt', maxCount: 1 },
+    { name: 'iso', maxCount: 1 },
+    { name: 'nabl', maxCount: 1 },
+    { name: 'nabh', maxCount: 1 },
+    { name: 'centerImg', maxCount: 1 },
+    { name: 'profileImgUrl', maxCount: 1 }
+
+]);
+
 // const upload = multer({
 //     storage: storage,
 //     fileFilter: (req, file, cb) => {
@@ -42,7 +55,7 @@ router.post("/send-otp", auth.sendOtp);
 router.get("/profile", JwtService.validateJwt, auth.getProfileController);
 router.put(
     "/profile",
-    upload.single("profileImgUrl"),
+    uploadFields,
     JwtService.validateJwt,
     auth.updateProfileHandler
 );

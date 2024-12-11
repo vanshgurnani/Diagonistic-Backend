@@ -212,7 +212,8 @@ module.exports.getCenter = async (req, res) => {
         const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
         const page = req?.query?.page ? parseInt(req.query.page) : 1;
         const skip = (page - 1) * limit;
-        const testName = req?.query?.testName || '';
+        const testName = req?.query?.testName ? req.query.testName.split(',').map(name => name.trim()) : [];
+        console.log("testName: ", testName);
         const address = req?.query?.address || '';
 
         // Add address filter if provided
@@ -239,7 +240,11 @@ module.exports.getCenter = async (req, res) => {
                     foreignField: 'email', // The foreign field to match
                     as: 'testDetails', // The name of the array field to add
                     pipeline: [
-                        { $match: { TestName: new RegExp(testName, 'i') } },
+                        { 
+                            $match: testName.length > 0 
+                                ? { TestName: { $in: testName.map(name => new RegExp(name, 'i')) } } // Search for any of the test names
+                                : {} // If no testName filter, include all
+                        },
                         { $sort: testDetailsSort },
                         { $limit: limit },
                         {
@@ -266,13 +271,15 @@ module.exports.getCenter = async (req, res) => {
             { $project: projection }
         ];
 
+        console.log("pipeline: ", pipeline);
+
         // Execute the aggregate query
         let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
 
         // If no testName provided, count all documents
         const countFilter = Object.keys(filter).length ? {
             ...filter,
-            'testDetails.TestName': new RegExp(testName, 'i')
+            'testDetails.TestName': { $in: testName.length > 0 ? testName : [] }
         } : {};
         
         // Count the total documents that match the filter
@@ -293,6 +300,7 @@ module.exports.getCenter = async (req, res) => {
         res.status(500).json({ type: 'Error', message: "Internal server error." });
     }
 };
+
 
 
 
@@ -318,6 +326,7 @@ module.exports.loginHandler = async (req, res) => {
       let accessToken = null;
       if (password === user?.password) {
           accessToken = jwtService.generateToken({
+              id: user._id,
               email: user.email,
               firstname: user.firstName,
               lastname: user.lastName,

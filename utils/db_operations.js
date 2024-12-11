@@ -68,7 +68,7 @@ module.exports.aggregate = async (pipeline, collectionName) => {
 
         const result = await collectionModel.aggregate(pipeline);
 
-        console.log(`Aggregate result - \n${JSON.stringify(result)}`);
+        // console.log(`Aggregate result - \n${JSON.stringify(result)}`);
         return result;
     } catch (error) {
         console.log(`Error aggregating document: ${error}`);
