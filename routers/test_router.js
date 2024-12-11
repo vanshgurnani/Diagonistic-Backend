@@ -35,4 +35,7 @@ router.post('/bulk', jwtService.validateJwt, upload.single('file'), Test.createB
 
 router.get('/all', Test.getAllTest);
 
+router.put('/category', Test.updateTestCategory);
+
+
 module.exports = router;

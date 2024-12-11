@@ -327,4 +327,22 @@ module.exports.getAllTest = async (req, res) => {
     }
 };
 
+module.exports.updateTestCategory = async (req, res) => {
+    try {
+        // Extract test ID from request parameters
+        const category = req.body.category;
+        // Extract update fields from request body
+        const updateFields = { ...req.body };
+    
+        // Execute the update operation
+        const result = await dbUtils.updateOne({ Category: category }, { $set: updateFields }, DATABASE_COLLECTIONS.TEST);
+    
+        res.status(200).json({ type: 'Success', message: "Test updated successfully", result });
+    } catch (error) {
+        console.error(`[updateTest] Error occurred while updating test: ${error}`);
+        res.status(500).json({ type: 'Error', message: "Failed to update test." });
+    }
+};
+  
+
 
