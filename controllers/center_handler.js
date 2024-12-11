@@ -246,7 +246,6 @@ module.exports.getCenter = async (req, res) => {
                                 : {} // If no testName filter, include all
                         },
                         { $sort: testDetailsSort },
-                        { $limit: limit },
                         {
                             $project: {
                                 _id: 0,
