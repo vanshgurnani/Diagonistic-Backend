@@ -329,18 +329,54 @@ module.exports.getAllTest = async (req, res) => {
 
 module.exports.updateTestCategory = async (req, res) => {
     try {
-        // Extract test ID from request parameters
+        // Extract test category from request body
         const category = req.body.category;
-        // Extract update fields from request body
+
+        // Extract the fields to update from request body
         const updateFields = { ...req.body };
-    
-        // Execute the update operation
-        const result = await dbUtils.updateOne({ Category: category }, { $set: updateFields }, DATABASE_COLLECTIONS.TEST);
-    
-        res.status(200).json({ type: 'Success', message: "Test updated successfully", result });
+
+        // If a discount is provided, calculate the finalPrice for all matching tests
+        if (updateFields.discount) {
+            // Fetch all tests matching the category
+            const tests = await dbUtils.findMany({ Category: category }, DATABASE_COLLECTIONS.TEST);
+
+            if (tests.length === 0) {
+                return res.status(404).json({ type: 'Error', message: "No tests found for the provided category." });
+            }
+
+            // Loop through each test and update the finalPrice
+            const updatedTests = tests.map(test => {
+                const rate = test.rate;
+                const discount = updateFields.discount || 0;
+
+                // Calculate the final price based on the rate and discount
+                const finalPrice = rate - (rate * discount / 100);
+
+                // Prepare the updated data
+                return {
+                    _id: test._id,  // Keep the ID for the update query
+                    finalPrice: finalPrice,
+                };
+            });
+
+            // Execute the update operation for all tests
+            const updateResult = await dbUtils.updateMany(
+                { Category: category },
+                { $set: { finalPrice: updatedTests.finalPrice } },
+                DATABASE_COLLECTIONS.TEST
+            );
+
+            // Return success response
+            res.status(200).json({ type: 'Success', message: "Tests updated successfully", updateResult });
+        } else {
+            // If no discount is provided, just proceed with the regular update
+            const result = await dbUtils.updateOne({ Category: category }, { $set: updateFields }, DATABASE_COLLECTIONS.TEST);
+
+            res.status(200).json({ type: 'Success', message: "Test updated successfully", result });
+        }
     } catch (error) {
-        console.error(`[updateTest] Error occurred while updating test: ${error}`);
-        res.status(500).json({ type: 'Error', message: "Failed to update test." });
+        console.error(`[updateTestCategory] Error occurred while updating tests: ${error}`);
+        res.status(500).json({ type: 'Error', message: "Failed to update tests." });
     }
 };
   
