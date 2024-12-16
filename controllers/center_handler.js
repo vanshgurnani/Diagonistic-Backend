@@ -242,7 +242,7 @@ module.exports.getCenter = async (req, res) => {
                     pipeline: [
                         { 
                             $match: testName.length > 0 
-                                ? { TestName: { $in: testName.map(name => new RegExp(name, 'i')) } } // Search for any of the test names
+                                ?  { TestName: { $in: testName } } // Search for any of the test names
                                 : {} // If no testName filter, include all
                         },
                         { $sort: testDetailsSort },
