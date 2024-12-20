@@ -35,7 +35,7 @@ router.post('/bulk', jwtService.validateJwt, upload.single('file'), Test.createB
 
 router.get('/all', Test.getAllTest);
 
-router.put('/category', Test.updateTestCategory);
+router.put('/category', jwtService.validateJwt, Test.updateTestCategory);
 
 router.get('/category', jwtService.validateJwt , Test.getAllDistinctCategories);
 

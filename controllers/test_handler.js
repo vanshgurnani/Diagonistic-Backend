@@ -352,80 +352,74 @@ module.exports.getAllTest = async (req, res) => {
 
 module.exports.updateTestCategory = async (req, res) => {
   try {
-    // Extract test category from request body
-    const category = req.body.category;
+    // Extract category and fields from the request body
+    const { category, discount, ...updateFields } = req.body;
 
-    // Extract the fields to update from request body
-    const updateFields = { ...req.body };
-
-    // If a discount is provided, calculate the finalPrice for all matching tests
-    if (updateFields.discount) {
-      // Fetch all tests matching the category
-      const tests = await dbUtils.findMany(
-        { Category: category },
-        DATABASE_COLLECTIONS.TEST
-      );
-
-      if (tests.length === 0) {
-        return res.status(404).json({
-          type: "Error",
-          message: "No tests found for the provided category.",
-        });
-      }
-
-      // Loop through each test and update the finalPrice
-      const updatedTests = tests.map((test) => {
-        const rate = test.rate;
-        const discount = updateFields.discount || 0;
-
-        // Calculate the final price based on the rate and discount
-        const finalPrice = rate - (rate * discount) / 100;
-
-        // Prepare the updated data
-        return {
-          _id: test._id, // Keep the ID for the update query
-          finalPrice: finalPrice,
-        };
-      });
-
-      const updateData = {
-        discount: updateFields.discount,
-        finalPrice: updatedTests.finalPrice
-      };
-      // Execute the update operation for all tests
-      const updateResult = await dbUtils.updateMany(
-        { Category: category },
-        { $set: updateData },
-        DATABASE_COLLECTIONS.TEST
-      );
-
-      // Return success response
-      res.status(200).json({
-        type: "Success",
-        message: "Tests updated successfully",
-        updateResult,
-      });
-    } else {
-      // If no discount is provided, just proceed with the regular update
-      const result = await dbUtils.updateOne(
-        { Category: category },
-        { $set: updateFields },
-        DATABASE_COLLECTIONS.TEST
-      );
-
-      res.status(200).json({
-        type: "Success",
-        message: "Test updated successfully",
-        result,
+    // Validate inputs
+    if (!category) {
+      return res.status(400).json({
+        type: "Error",
+        message: "Category is required.",
       });
     }
+
+    // Fetch tests matching the category
+    const tests = await dbUtils.findMany(
+      {
+        email: req.decodedToken.email,
+        Category: category,
+      },
+      DATABASE_COLLECTIONS.TEST
+    );
+
+    if (!tests.length) {
+      return res.status(404).json({
+        type: "Error",
+        message: "No tests found for the provided category.",
+      });
+    }
+
+    // Prepare bulk updates for each test
+    const bulkUpdates = tests.map((test) => {
+      const rate = test.rate;
+      const finalPrice = rate - (rate * (discount || 0)) / 100;
+
+      return {
+        updateOne: {
+          filter: { _id: test._id },
+          update: {
+            $set: {
+              discount,
+              finalPrice,
+              ...updateFields, // Include additional fields from req.body
+            },
+          },
+        },
+      };
+    });
+
+    // Execute bulk update
+    const updateResult = await dbUtils.bulkWrite(
+      bulkUpdates,
+      DATABASE_COLLECTIONS.TEST
+    );
+
+    res.status(200).json({
+      type: "Success",
+      message: "Tests updated successfully",
+      updateResult,
+    });
   } catch (error) {
     console.error(
       `[updateTestCategory] Error occurred while updating tests: ${error}`
     );
-    res.status(500).json({ type: "Error", message: "Failed to update tests." });
+    res.status(500).json({
+      type: "Error",
+      message: "Failed to update tests.",
+    });
   }
 };
+
 
 module.exports.getAllDistinctCategories = async (req, res) => {
   try {
