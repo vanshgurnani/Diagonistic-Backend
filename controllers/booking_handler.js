@@ -7,105 +7,118 @@ const emailService = require("../services/email_service");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
 const DATABASE = configs.CONSTANTS;
 
-module.exports.createBooking =  async(req,res) =>{
-    try{
-        const firstname = req.decodedToken.firstname;
-        const lastname = req.decodedToken.lastname;
-        const fullname = firstname + ' ' + lastname;
-        const phonenumber = req.decodedToken.phonenumber;
-        const email = req.decodedToken.email;
+module.exports.createBooking = async (req, res) => {
+  try {
+      const firstname = req.decodedToken.firstname;
+      const lastname = req.decodedToken.lastname;
+      const fullname = firstname + ' ' + lastname;
+      const phonenumber = req.decodedToken.phonenumber;
+      const email = req.decodedToken.email;
 
-        console.log(fullname , phonenumber);
+      console.log(fullname, phonenumber);
 
-        const requiredFields = [
-            { property: "centerEmail", optional: true },
-            { property: "testName", optional: true },
-            { property: "preferredDoctorName", optional: true },
-            { property: "rate", optional: true },
-            { property: "timeSlot", optional: true },
-            { property: "paymentId", optional: true }
-            
+      const requiredFields = [
+          { property: "centerEmail", optional: true },
+          { property: "testName", optional: true }, // Array of objects
+          { property: "preferredDoctorName", optional: true },
+          { property: "timeSlot", optional: true },
+          { property: "paymentId", optional: true }
+      ];
 
-        ];
+      const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
+      const { testName, preferredDoctorName, centerEmail, timeSlot, paymentId } = payload;
 
-        const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
+      if (!Array.isArray(testName)) {
+          throw new Error("testName should be an array of objects.");
+      }
 
-        const { testName , preferredDoctorName , centerEmail, rate ,timeSlot, paymentId } = payload;
+      const bookings = [];
+      const orders = [];
 
-        const newBooking = {
-            patientName : fullname,
-            phoneNumber : phonenumber,
-            patientEmail : email, 
-            centerEmail ,
-            testName ,
-            preferredDoctorName ,
-            rate ,
-            timeSlot ,
-            paymentId
+      for (const testObj of testName) {
+          const { TestName: test, finalPrice } = testObj;
 
-        }
+          if (!test || !finalPrice) {
+              throw new Error("Each test object must have 'testName' and 'finalPrice'.");
+          }
 
-        
-        const Booking = await dbUtils.create(newBooking, DATABASE_COLLECTIONS.BOOKING);
-        
-        const newOrder = {
-          bookingId: Booking._id,
-          paymentId: Booking.paymentId,
-          centerEmail: centerEmail,
-          patientName: fullname,
-          patientEmail: email,
-          testName: testName
-        }
+          const newBooking = {
+              patientName: fullname,
+              phoneNumber: phonenumber,
+              patientEmail: email,
+              centerEmail,
+              testName: test,
+              preferredDoctorName,
+              rate: finalPrice, // Store finalPrice in rate
+              timeSlot,
+              paymentId
+          };
 
-        const order = await dbUtils.create(newOrder, DATABASE_COLLECTIONS.ORDERED_TEST);
+          const Booking = await dbUtils.create(newBooking, DATABASE_COLLECTIONS.BOOKING);
+          bookings.push(Booking);
 
-        const dateObj = new Date(timeSlot);
-        const date = dateObj.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
-        const time = dateObj.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+          const newOrder = {
+              bookingId: Booking._id,
+              paymentId: Booking.paymentId,
+              centerEmail: centerEmail,
+              patientName: fullname,
+              patientEmail: email,
+              testName: test
+          };
 
-        const emailSubject = "DiagnoWeb Booking Confirmation";
-        const content = `
-          Dear ${fullname},
-    
-          Thank you for booking your test with DiagnoWeb. Here are the details of your booking:
-    
-          Test Name: ${testName}
-          Preferred Doctor: ${preferredDoctorName}
-          Center Email: ${centerEmail}
-          Rate: ${rate}
-    
-          Date: ${date}
-          Time: ${time}
-    
-          Please make sure to be at the venue at least 15 minutes before your scheduled time.
-    
-          If you have any questions, feel free to contact us at [Contact Information].
-    
-          Best regards,
-          DiagnoWeb Team
-        `;
-    
-        const html = template.sendDynamicEmailTemplate(emailSubject, fullname, content);
-    
-        await emailService.sendMail(email, emailSubject, null, html);
-    
+          const order = await dbUtils.create(newOrder, DATABASE_COLLECTIONS.ORDERED_TEST);
+          orders.push(order);
 
+          const dateObj = new Date(timeSlot);
+          const date = dateObj.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+          });
+          const time = dateObj.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit'
+          });
 
-        res.status(200).json({ type: "success" ,  Booking , order });
+          const emailSubject = "DiagnoWeb Booking Confirmation";
+          const content = `
+            Dear ${fullname},
 
-    }
-    catch(error){
-        console.error(`[BookingController] Error occurred: ${error}`);
-        res.status(500).json({ type: 'Error', message: "Failed to create booking." });
-    }
+            Thank you for booking your test with DiagnoWeb. Here are the details of your booking:
+
+            Test Name: ${test}
+            Preferred Doctor: ${preferredDoctorName}
+            Center Email: ${centerEmail}
+            Rate: ${finalPrice}
+
+            Date: ${date}
+            Time: ${time}
+
+            Please make sure to be at the venue at least 15 minutes before your scheduled time.
+
+            If you have any questions, feel free to contact us at [Contact Information].
+
+            Best regards,
+            DiagnoWeb Team
+          `;
+
+          const html = template.sendDynamicEmailTemplate(emailSubject, fullname, content);
+
+          await emailService.sendMail(email, emailSubject, null, html);
+      }
+
+      res.status(200).json({
+          type: "success",
+          bookings,
+          orders
+      });
+
+  } catch (error) {
+      console.error(`[BookingController] Error occurred: ${error}`);
+      res.status(500).json({ type: 'Error', message: "Failed to create booking." });
+  }
 };
+
 
 module.exports.getBooking = async (req, res) => {
   try {
