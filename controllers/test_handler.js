@@ -388,10 +388,14 @@ module.exports.updateTestCategory = async (req, res) => {
         };
       });
 
+      const updateData = {
+        discount: updateFields.discount,
+        finalPrice: updatedTests.finalPrice
+      };
       // Execute the update operation for all tests
       const updateResult = await dbUtils.updateMany(
         { Category: category },
-        { $set: { finalPrice: updatedTests.finalPrice } },
+        { $set: updateData },
         DATABASE_COLLECTIONS.TEST
       );
 
