@@ -7,37 +7,36 @@ const jwtService = require("../services/jwt");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
 
 module.exports.sendCenterOtp = async (req, res) => {
-  try {
-      const { email } = req.body;
+    try {
+        const { email } = req.body;
 
-      // Check if the center email is provided
-      if (!email) {
-          return res.status(400).json({ error: "Center email is required." });
-      }
+        // Check if the center email is provided
+        if (!email) {
+            return res.status(400).json({ error: "Center email is required." });
+        }
 
-      // Generate OTP
-      const otpNumber = commonUtils.generateRandomOtp(configs.OTP_LENGTH);
+        // Generate OTP
+        const otpNumber = commonUtils.generateRandomOtp(configs.OTP_LENGTH);
 
-      // Save OTP to the database or any other storage
-      await dbUtils.create({ email: email, otp: otpNumber }, DATABASE_COLLECTIONS.CENTER_OTPS);
+        // Save OTP to the database or any other storage
+        await dbUtils.create({ email: email, otp: otpNumber }, DATABASE_COLLECTIONS.CENTER_OTPS);
 
-      // Send OTP via email (You can customize this according to your requirement)
-      const emailSubject = "OTP for Center Registration";
-      const emailText = `Your OTP for registration is: ${otpNumber}`;
-      const emailHtml = `<p>Your OTP for registration is: <strong>${otpNumber}</strong></p>`;
+        // Send OTP via email (You can customize this according to your requirement)
+        const emailSubject = "OTP for Center Registration";
+        const emailText = `Your OTP for registration is: ${otpNumber}`;
+        const emailHtml = `<p>Your OTP for registration is: <strong>${otpNumber}</strong></p>`;
 
-      await emailService.sendMail(email, emailSubject, emailText, emailHtml);
+        await emailService.sendMail(email, emailSubject, emailText, emailHtml);
 
-      res.status(200).json({ message: "OTPs sent successfully." });
-  } catch (error) {
-      console.error(`[sendCenterOtp] Error occurred: ${error}`);
-      res.status(500).json({ error: "Failed to send OTP." });
-  }
+        res.status(200).json({ message: "OTPs sent successfully." });
+    } catch (error) {
+        console.error(`[sendCenterOtp] Error occurred: ${error}`);
+        res.status(500).json({ error: "Failed to send OTP." });
+    }
 };
 
-module.exports.createCenter = async(req,res) =>{
-    try{       
-        
+module.exports.createCenter = async (req, res) => {
+    try {
         const requiredFields = [
             { property: "centerName", optional: true },
             { property: "contact", optional: true },
@@ -51,16 +50,15 @@ module.exports.createCenter = async(req,res) =>{
             { property: "staffNumber", optional: false },
             { property: "otp", optional: false },
             { property: "termsAndCondition", optional: true },
-            { property: "centerContact", optional: false }
-
-
+            { property: "centerContact", optional: false },
         ];
 
         const payload = await commonUtils.validateRequestBody(req.body, requiredFields);
 
-        const { centerName,
+        const {
+            centerName,
             contact,
-            email, 
+            email,
             password,
             firstName,
             lastName,
@@ -70,41 +68,39 @@ module.exports.createCenter = async(req,res) =>{
             staffNumber,
             otp,
             termsAndCondition,
-            centerContact
+            centerContact,
         } = payload;
 
         const pipline = [
-          {
-              $match: {
-                  email: email,
-              },
-          },
-          {
-              $sort: { createdAt: -1 },
-          },
-          {
-              $limit: 1,
-          },
-      ];
+            {
+                $match: {
+                    email: email,
+                },
+            },
+            {
+                $sort: { createdAt: -1 },
+            },
+            {
+                $limit: 1,
+            },
+        ];
 
-        const storedOtp = await dbUtils.aggregate(
-          pipline,
-          DATABASE_COLLECTIONS.CENTER_OTPS
-        );
+        const storedOtp = await dbUtils.aggregate(pipline, DATABASE_COLLECTIONS.CENTER_OTPS);
 
         const existingCenter = await dbUtils.findOne({ email: email }, DATABASE_COLLECTIONS.CENTER);
 
         const existingPatient = await dbUtils.findOne({ email: email }, DATABASE_COLLECTIONS.USERS);
 
         if (existingCenter) {
-            return res.status(400).json({type: "error", message: "This Email is already alloted a Center." });
+            return res.status(400).json({ type: "error", message: "This Email is already alloted a Center." });
         }
 
         if (existingPatient) {
-            return res.status(400).json({type: "error", message: "This Email is already alloted a Patient and you are not authorized to create center." });
+            return res.status(400).json({
+                type: "error",
+                message: "This Email is already alloted a Patient and you are not authorized to create center.",
+            });
         }
-
-
 
         console.log(storedOtp);
 
@@ -113,21 +109,21 @@ module.exports.createCenter = async(req,res) =>{
         console.log(otp);
 
         if (!storedOtp) {
-            return res.status(400).json({type: "error" , message: "OTP not found or expired." });
+            return res.status(400).json({ type: "error", message: "OTP not found or expired." });
         }
 
         if (storedOtp[0].otp !== otp) {
-            return res.status(400).json({type: "error" , message: "Invalid OTP." });
+            return res.status(400).json({ type: "error", message: "Invalid OTP." });
         }
 
         const uploadedFiles = {
-            addressProof: '',
-            shopAct: '',
-            pcpndt: '',
-            iso: '',
-            nabl: '',
-            nabh: '',
-            centerImg: ''
+            addressProof: "",
+            shopAct: "",
+            pcpndt: "",
+            iso: "",
+            nabl: "",
+            nabh: "",
+            centerImg: "",
         };
 
         if (req.files) {
@@ -141,7 +137,8 @@ module.exports.createCenter = async(req,res) =>{
         }
 
         if (!uploadedFiles.centerImg) {
-            uploadedFiles.centerImg = 'https://static.vecteezy.com/system/resources/thumbnails/017/177/954/small/round-medical-cross-symbol-on-transparent-background-free-png.png';
+            uploadedFiles.centerImg =
+                "https://static.vecteezy.com/system/resources/thumbnails/017/177/954/small/round-medical-cross-symbol-on-transparent-background-free-png.png";
         }
 
         const newCenterVerify = {
@@ -162,15 +159,15 @@ module.exports.createCenter = async(req,res) =>{
             centerImg: uploadedFiles.centerImg,
             isIso: !!uploadedFiles.iso,
             isNabl: !!uploadedFiles.nabl,
-            isNabh: !!uploadedFiles.nabh
-          }
-  
+            isNabh: !!uploadedFiles.nabh,
+        };
+
         const centerVerfiy = await dbUtils.create(newCenterVerify, DATABASE_COLLECTIONS.CENTER_VERIFY);
 
         const newCenter = {
             centerName,
             contact,
-            email, 
+            email,
             password,
             firstName,
             lastName,
@@ -189,18 +186,16 @@ module.exports.createCenter = async(req,res) =>{
             isNabl: !!uploadedFiles.nabl,
             isNabh: !!uploadedFiles.nabh,
             termsAndCondition,
-            centerContact
-
-        }
+            centerContact,
+        };
 
         const center = await dbUtils.create(newCenter, DATABASE_COLLECTIONS.CENTER);
 
-        res.status(200).json({ type: "success" ,  center , centerVerfiy});
-    }
-    catch(error){
+        res.status(200).json({ type: "success", center, centerVerfiy });
+    } catch (error) {
         console.error(`[CenterController] Error occurred: ${error}`);
         await dbUtils.deleteOne({ email: req.body.email }, DATABASE_COLLECTIONS.CENTER_OTPS);
-        res.status(500).json({ type: 'Error', message: "Failed to create center." });
+        res.status(500).json({ type: "Error", message: "Failed to create center." });
     }
 };
 
@@ -212,18 +207,18 @@ module.exports.getCenter = async (req, res) => {
         const limit = req?.query?.limit ? parseInt(req.query.limit) : 5;
         const page = req?.query?.page ? parseInt(req.query.page) : 1;
         const skip = (page - 1) * limit;
-        const testName = req?.query?.testName ? req.query.testName.split(',').map(name => name.trim()) : [];
+        const testName = req?.query?.testName ? req.query.testName.split(",").map((name) => name.trim()) : [];
         console.log("testName: ", testName);
-        const address = req?.query?.address || '';
+        const address = req?.query?.address || "";
 
         // Add address filter if provided
         if (address) {
-            filter.address = new RegExp(address, 'i');
+            filter.address = new RegExp(address, "i");
         }
 
         // Define projection to include only necessary fields
         const projection = {
-            password: 0
+            password: 0,
         };
 
         const testDetailsSort = req?.query?.testDetailsSort ? JSON.parse(req.query.testDetailsSort) : { createdAt: -1 };
@@ -231,19 +226,20 @@ module.exports.getCenter = async (req, res) => {
         // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
         const pipeline = [
             {
-                $match: filter
+                $match: filter,
             },
             {
                 $lookup: {
-                    from: 'tests', // The collection name for tests
-                    localField: 'email', // The local field to match
-                    foreignField: 'email', // The foreign field to match
-                    as: 'testDetails', // The name of the array field to add
+                    from: "tests", // The collection name for tests
+                    localField: "email", // The local field to match
+                    foreignField: "email", // The foreign field to match
+                    as: "testDetails", // The name of the array field to add
                     pipeline: [
-                        { 
-                            $match: testName.length > 0 
-                                ?  { TestName: { $in: testName } } // Search for any of the test names
-                                : {} // If no testName filter, include all
+                        {
+                            $match:
+                                testName.length > 0
+                                    ? { TestName: { $in: testName } } // Search for any of the test names
+                                    : {}, // If no testName filter, include all
                         },
                         { $sort: testDetailsSort },
                         {
@@ -252,22 +248,22 @@ module.exports.getCenter = async (req, res) => {
                                 TestName: 1,
                                 finalPrice: 1,
                                 rate: 1,
-                                discount: 1
-                            }
-                        }
-                    ]
-                }
+                                discount: 1,
+                            },
+                        },
+                    ],
+                },
             },
             {
                 $match: {
                     $or: [
-                        { 'testDetails': { $ne: [] } }, // Centers with matching test details
-                        { 'testDetails': { $exists: false } } // Centers without test details
-                    ]
-                }
+                        { testDetails: { $ne: [] } }, // Centers with matching test details
+                        { testDetails: { $exists: false } }, // Centers without test details
+                    ],
+                },
             },
             { $sort: sort },
-            { $project: projection }
+            { $project: projection },
         ];
 
         console.log("pipeline: ", pipeline);
@@ -276,141 +272,133 @@ module.exports.getCenter = async (req, res) => {
         let result = await dbUtils.aggregate(pipeline, DATABASE_COLLECTIONS.CENTER);
 
         // If no testName provided, count all documents
-        const countFilter = Object.keys(filter).length ? {
-            ...filter,
-            'testDetails.TestName': { $in: testName.length > 0 ? testName : [] }
-        } : {};
-        
+        const countFilter = Object.keys(filter).length
+            ? {
+                  ...filter,
+                  "testDetails.TestName": { $in: testName.length > 0 ? testName : [] },
+              }
+            : {};
+
         // Count the total documents that match the filter
         const totalDocumentCount = await dbUtils.countDocuments(countFilter, DATABASE_COLLECTIONS.CENTER);
 
         // Send Success response with center data
         res.status(200).json({
-            type: 'Success',
+            type: "Success",
             page,
             limit,
             totalPages: Math.ceil(totalDocumentCount / limit),
             totalCount: totalDocumentCount,
-            center: result
+            center: result,
         });
-
     } catch (error) {
         console.error(`[getCenter] Error occurred: ${error}`);
-        res.status(500).json({ type: 'Error', message: "Internal server error." });
+        res.status(500).json({ type: "Error", message: "Internal server error." });
     }
 };
 
-
-
-
 module.exports.loginHandler = async (req, res) => {
-  try {
-      let requiredFields = [
-          { property: "email", optional: true },
-          { property: "password", optional: true },
-      ];
+    try {
+        let requiredFields = [
+            { property: "email", optional: true },
+            { property: "password", optional: true },
+        ];
 
-      const { email , password } = await commonUtils.validateRequestBody(
-          req.body,
-          requiredFields
-      );
+        const { email, password } = await commonUtils.validateRequestBody(req.body, requiredFields);
 
-      const user = await dbUtils.findOne(
-          { email: email },
-          DATABASE_COLLECTIONS.CENTER
-      );
+        const user = await dbUtils.findOne({ email: email }, DATABASE_COLLECTIONS.CENTER);
 
-      console.log("login user data ", user);
+        console.log("login user data ", user);
 
-      let accessToken = null;
-      if (password === user?.password) {
-          accessToken = jwtService.generateToken({
-              id: user._id,
-              email: user.email,
-              firstname: user.firstName,
-              lastname: user.lastName,
-              phonenumber: user.ownerContact
-          });
+        let accessToken = null;
+        if (password === user?.password) {
+            accessToken = jwtService.generateToken({
+                id: user._id,
+                email: user.email,
+                firstname: user.firstName,
+                lastname: user.lastName,
+                phonenumber: user.ownerContact,
+            });
 
-          res.status(200).json({
-              message: "Login Successfully!",
-              accessToken: accessToken,
-          });
-      } else {
-          res.status(403).json({
-              error: "Invalid password.",
-          });
-      }
-  } catch (error) {
-      console.log(`[centerLoginHandler] Error occurred: ${error}`);
-      res.status(500).json({
-          error: error.message,
-      });
-  }
+            res.status(200).json({
+                message: "Login Successfully!",
+                accessToken: accessToken,
+            });
+        } else {
+            res.status(403).json({
+                error: "Invalid password.",
+            });
+        }
+    } catch (error) {
+        console.log(`[centerLoginHandler] Error occurred: ${error}`);
+        res.status(500).json({
+            error: error.message,
+        });
+    }
 };
 
 module.exports.updateCenter = async (req, res) => {
-  try {
-      const email = req.body.email;
+    try {
+        const email = req.body.email;
 
-      if (!email) {
-          return res.status(400).json({ error: "Email is required." });
-      }
+        if (!email) {
+            return res.status(400).json({ error: "Email is required." });
+        }
 
-      const updateFields = {
-          name: req.body.name,
-          contact: req.body.contact,
-          password: req.body.password,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          ownerContact: req.body.ownerContact,
-          centerGST: req.body.centerGST,
-          address: req.body.address,
-          staffNumber: req.body.staffNumber,
-          status: req.body.status,
-          available: req.body.available,
-          saved: req.body.saved,
-          termsAndCondition: req.body.termsAndCondition
-      };
+        const updateFields = {
+            name: req.body.name,
+            contact: req.body.contact,
+            password: req.body.password,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            ownerContact: req.body.ownerContact,
+            centerGST: req.body.centerGST,
+            address: req.body.address,
+            staffNumber: req.body.staffNumber,
+            status: req.body.status,
+            available: req.body.available,
+            saved: req.body.saved,
+            termsAndCondition: req.body.termsAndCondition,
+        };
 
-      const uploadedFiles = {};
+        const uploadedFiles = {};
 
-      if (req.files) {
-          for (const [fieldName, files] of Object.entries(req.files)) {
-              for (const file of files) {
-                  const fileName = `${fieldName}-${Date.now()}-${file.originalname}`;
-                  const fileUrl = await s3Utils.uploadFileToS3(file, fileName, process.env.AWS_BUCKET_NAME);
-                  uploadedFiles[fieldName] = fileUrl.Location;
-              }
-          }
-      }
+        if (req.files) {
+            for (const [fieldName, files] of Object.entries(req.files)) {
+                for (const file of files) {
+                    const fileName = `${fieldName}-${Date.now()}-${file.originalname}`;
+                    const fileUrl = await s3Utils.uploadFileToS3(file, fileName, process.env.AWS_BUCKET_NAME);
+                    uploadedFiles[fieldName] = fileUrl.Location;
+                }
+            }
+        }
 
-      const update = {
-          ...updateFields,
-          addressProof: uploadedFiles.addressProof,
-          shopAct: uploadedFiles.shopAct,
-          pcpndt: uploadedFiles.pcpndt,
-          iso: uploadedFiles.iso,
-          nabl: uploadedFiles.nabl,
-          nabh: uploadedFiles.nabh,
-          centerImg: uploadedFiles.centerImg
-      };
+        const update = {
+            ...updateFields,
+            addressProof: uploadedFiles.addressProof,
+            shopAct: uploadedFiles.shopAct,
+            pcpndt: uploadedFiles.pcpndt,
+            iso: uploadedFiles.iso,
+            nabl: uploadedFiles.nabl,
+            nabh: uploadedFiles.nabh,
+            centerImg: uploadedFiles.centerImg,
+        };
 
-      const result = await dbUtils.updateOne({ email: email }, { $set: update }, DATABASE_COLLECTIONS.CENTER);
+        const result = await dbUtils.updateOne({ email: email }, { $set: update }, DATABASE_COLLECTIONS.CENTER);
 
-      if (result.modifiedCount === 0) {
-          return res.status(404).json({ error: "Center not found or no changes made." });
-      }
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ error: "Center not found or no changes made." });
+        }
 
-      res.status(200).json({ type: "success", message: "Center updated successfully." });
-  } catch (error) {
-      console.error(`[CenterController] Error occurred: ${error}`);
-      res.status(500).json({ type: 'Error', message: "Failed to update center." });
-  }
+        res.status(200).json({ type: "success", message: "Center updated successfully." });
+    } catch (error) {
+        console.error(`[CenterController] Error occurred: ${error}`);
+        res.status(500).json({ type: "Error", message: "Failed to update center." });
+    }
 };
 
-module.exports.updateProfile = async(req, res) => {
-    try{
+module.exports.updateProfile = async (req, res) => {
+    try {
         const email = req.decodedToken.email;
 
         console.log(email);
@@ -418,7 +406,7 @@ module.exports.updateProfile = async(req, res) => {
         if (!email) {
             return res.status(400).json({ error: "Email is required." });
         }
-  
+
         const updateFields = {
             name: req.body.name,
             contact: req.body.contact,
@@ -432,9 +420,9 @@ module.exports.updateProfile = async(req, res) => {
             status: req.body.status,
             available: req.body.available,
         };
-  
+
         const uploadedFiles = {};
-  
+
         if (req.files) {
             for (const [fieldName, files] of Object.entries(req.files)) {
                 for (const file of files) {
@@ -444,7 +432,7 @@ module.exports.updateProfile = async(req, res) => {
                 }
             }
         }
-  
+
         const update = {
             ...updateFields,
             addressProof: uploadedFiles.addressProof,
@@ -453,40 +441,170 @@ module.exports.updateProfile = async(req, res) => {
             iso: uploadedFiles.iso,
             nabl: uploadedFiles.nabl,
             nabh: uploadedFiles.nabh,
-            centerImg: uploadedFiles.centerImg
+            centerImg: uploadedFiles.centerImg,
         };
-  
+
         const result = await dbUtils.updateOne({ email: email }, { $set: update }, DATABASE_COLLECTIONS.CENTER);
 
-  
         res.status(200).json({ type: "success", message: "Center updated successfully.", result });
-
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[updateCenterProfile] Error occurred: ${error}`);
-        res.status(500).json({ type: 'Error', message: "Failed to update center." });
+        res.status(500).json({ type: "Error", message: "Failed to update center." });
     }
 };
 
-module.exports.getCenterName = async(req, res) => {
-    try{
-        const center = await dbUtils.findMany(
-            {},
-            DATABASE_COLLECTIONS.CENTER,
-            {
-                _id: 0,
-                centerName: 1,
-                email: 1
-            }
-        )
-
-        res.status(200).json({
-            type: 'Success',
-            center
+module.exports.getCenterName = async (req, res) => {
+    try {
+        const center = await dbUtils.findMany({}, DATABASE_COLLECTIONS.CENTER, {
+            _id: 0,
+            centerName: 1,
+            email: 1,
         });
 
+        res.status(200).json({
+            type: "Success",
+            center,
+        });
     } catch (error) {
         console.error(`[getCenterName] Error occurred: ${error}`);
-        res.status(500).json({ type: 'Error', message: "Internal server error." });
+        res.status(500).json({ type: "Error", message: "Internal server error." });
+    }
+};
+
+module.exports.createOrUpsertCenters = async (req, res) => {
+    try {
+        const { centers } = req.body;
+
+        // Check if centers array is provided
+        if (!centers || !Array.isArray(centers) || centers.length === 0) {
+            return res.status(400).json({
+                type: "error",
+                message: "An array of centers is required in the request body.",
+            });
+        }
+
+        const results = {
+            created: [],
+            updated: [],
+            failed: [],
+        };
+
+        // Process each center in the array
+        for (const centerData of centers) {
+            try {
+                const { email } = centerData;
+
+                // Check if email is provided
+                if (!email) {
+                    results.failed.push({
+                        data: centerData,
+                        reason: "Email is required for each center",
+                    });
+                    continue;
+                }
+
+                // Check if center already exists
+                const existingCenter = await dbUtils.findOne({ email: email }, DATABASE_COLLECTIONS.CENTER);
+
+                // Check if email is already used by a patient
+                const existingPatient = await dbUtils.findOne({ email: email }, DATABASE_COLLECTIONS.USERS);
+
+                if (existingPatient) {
+                    results.failed.push({
+                        data: centerData,
+                        reason: "This email is already allocated to a patient",
+                    });
+                    continue;
+                }
+
+                // Set default values for boolean fields
+                const isIso = !!centerData.iso;
+                const isNabl = !!centerData.nabl;
+                const isNabh = !!centerData.nabh;
+
+                // Set default center image if not provided
+                if (!centerData.centerImg) {
+                    centerData.centerImg =
+                        "https://static.vecteezy.com/system/resources/thumbnails/017/177/954/small/round-medical-cross-symbol-on-transparent-background-free-png.png";
+                }
+
+                // Prepare center data
+                const centerToSave = {
+                    ...centerData,
+                    isIso,
+                    isNabl,
+                    isNabh,
+                    roles: configs.CONSTANTS.ROLES.CENTER,
+                    available: centerData.available || configs.CONSTANTS.AVAILABLE.YES,
+                    status: centerData.status || configs.CONSTANTS.STATUS.PENDING,
+                    saved: centerData.saved || false,
+                };
+
+                if (existingCenter) {
+                    // Update existing center
+                    const updatedCenter = await dbUtils.updateOne(
+                        { email: email },
+                        { $set: centerToSave },
+                        DATABASE_COLLECTIONS.CENTER
+                    );
+
+                    results.updated.push({
+                        email,
+                        message: "Center updated successfully",
+                    });
+                } else {
+                    // Create new center
+                    const newCenter = await dbUtils.create(centerToSave, DATABASE_COLLECTIONS.CENTER);
+
+                    // Also create a verification record
+                    const newCenterVerify = {
+                        centerName: centerData.centerName,
+                        centerContact: centerData.ownerContact,
+                        ownerFirstName: centerData.firstName,
+                        ownerLastName: centerData.lastName,
+                        ownerEmail: email,
+                        centerGST: centerData.centerGST,
+                        address: centerData.address,
+                        staffNumber: centerData.staffNumber,
+                        addressProof: centerData.addressProof || "",
+                        shopAct: centerData.shopAct || "",
+                        pcpndt: centerData.pcpndt || "",
+                        iso: centerData.iso || "",
+                        nabl: centerData.nabl || "",
+                        nabh: centerData.nabh || "",
+                        centerImg: centerData.centerImg,
+                        isIso,
+                        isNabl,
+                        isNabh,
+                    };
+
+                    await dbUtils.create(newCenterVerify, DATABASE_COLLECTIONS.CENTER_VERIFY);
+
+                    results.created.push({
+                        email,
+                        message: "Center created successfully",
+                    });
+                }
+            } catch (error) {
+                console.error(`Error processing center: ${error.message}`);
+                results.failed.push({
+                    data: centerData,
+                    reason: error.message,
+                });
+            }
+        }
+
+        res.status(200).json({
+            type: "success",
+            message: "Bulk center operation completed",
+            results,
+        });
+    } catch (error) {
+        console.error(`[createOrUpsertCenters] Error occurred: ${error}`);
+        res.status(500).json({
+            type: "error",
+            message: "Failed to process centers",
+            error: error.message,
+        });
     }
 };
