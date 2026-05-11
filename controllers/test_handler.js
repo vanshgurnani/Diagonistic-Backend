@@ -1,7 +1,7 @@
 const dbUtils = require("../utils/db_operations");
 const configs = require("../configs.json");
 const commonUtils = require("../utils/common");
-const { parse } = require("csv-parse");
+const XLSX = require("xlsx");
 const DATABASE_COLLECTIONS = configs.CONSTANTS.DATABASE_COLLECTIONS;
 
 module.exports.createTest = async (req, res) => {
@@ -205,67 +205,75 @@ module.exports.createBulkTests = async (req, res) => {
         .json({ type: "Error", message: "No file uploaded." });
     }
 
-    // Read the file buffer directly
-    const fileBuffer = req.file.buffer;
+    // Read and parse spreadsheet data from uploaded buffer.
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const firstSheetName = workbook.SheetNames[0];
 
-    // Parse CSV data from buffer
-    parse(fileBuffer.toString(), { columns: true })
-      .on("data", (row) => {
-        if (!row.discountPercentage) {
-          row.discountPercentage = 0;
-        }
-        if (!row.finalPrice) {
-          row.finalPrice = row.rate;
-        }
-        testData.push(row);
-      })
-      .on("end", async () => {
-        if (testData.length === 0) {
-          return res.status(400).json({
-            type: "Error",
-            message: "No data found in the uploaded file.",
-          });
-        }
-
-        try {
-          // Validate and prepare bulk operations
-          const bulkOperations = await Promise.all(
-            testData.map(async (data) => {
-              const payload = await commonUtils.validateRequestBody(data, keys);
-              return {
-                insertOne: {
-                  document: {
-                    ...payload,
-                    email: email,
-                  },
-                },
-              };
-            })
-          );
-
-          // Execute bulkWrite operation
-          const result = await dbUtils.bulkWrite(
-            bulkOperations,
-            DATABASE_COLLECTIONS.TEST
-          );
-
-          // Send success response
-          res.status(201).json({
-            type: "Success",
-            message: `${result.insertedCount} test documents created successfully.`,
-          });
-        } catch (validationError) {
-          // If validation error occurs while processing individual data
-          console.error(
-            `[createBulkTests] Data validation error: ${validationError}`
-          );
-          res.status(400).json({
-            type: "Error",
-            message: "Validation error in test data.",
-            details: validationError.message,
-          });
-        }
+    if (!firstSheetName) {
+      return res.status(400).json({
+        type: "Error",
+        message: "No sheet found in the uploaded file.",
       });
+    }
+
+    const worksheet = workbook.Sheets[firstSheetName];
+    testData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+    testData = testData.map((row) => {
+      if (!row.discountPercentage) {
+        row.discountPercentage = 0;
+      }
+      if (!row.finalPrice) {
+        row.finalPrice = row.rate;
+      }
+      return row;
+    });
+
+    if (testData.length === 0) {
+      return res.status(400).json({
+        type: "Error",
+        message: "No data found in the uploaded file.",
+      });
+    }
+
+    try {
+      // Validate and prepare bulk operations
+      const bulkOperations = await Promise.all(
+        testData.map(async (data) => {
+          const payload = await commonUtils.validateRequestBody(data, keys);
+          return {
+            insertOne: {
+              document: {
+                ...payload,
+                email: email,
+              },
+            },
+          };
+        })
+      );
+
+      // Execute bulkWrite operation
+      const result = await dbUtils.bulkWrite(
+        bulkOperations,
+        DATABASE_COLLECTIONS.TEST
+      );
+
+      // Send success response
+      res.status(201).json({
+        type: "Success",
+        message: `${result.insertedCount} test documents created successfully.`,
+      });
+    } catch (validationError) {
+      // If validation error occurs while processing individual data
+      console.error(
+        `[createBulkTests] Data validation error: ${validationError}`
+      );
+      res.status(400).json({
+        type: "Error",
+        message: "Validation error in test data.",
+        details: validationError.message,
+      });
+    }
   } catch (error) {
     console.error(`[createBulkTests] Error occurred: ${error}`);
     res
