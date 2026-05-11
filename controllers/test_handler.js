@@ -189,7 +189,7 @@ module.exports.createBulkTests = async (req, res) => {
       { property: "TestName", optional: false },
       { property: "Category", optional: false },
       { property: "rate", optional: false },
-      { property: "discount", optional: true },
+      { property: "discountPercentage", optional: true },
       { property: "available", optional: true },
       { property: "finalPrice", optional: true },
     ];
@@ -211,6 +211,9 @@ module.exports.createBulkTests = async (req, res) => {
     // Parse CSV data from buffer
     parse(fileBuffer.toString(), { columns: true })
       .on("data", (row) => {
+        if (!row.discountPercentage) {
+          row.discountPercentage = 0;
+        }
         if (!row.finalPrice) {
           row.finalPrice = row.rate;
         }
