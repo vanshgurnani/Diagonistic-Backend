@@ -30,7 +30,8 @@ app.use(session(EXPRESS_SESSION_CONFIGS));
 const allowedOrigins = [
     "https://diagnostic-frontend.vercel.app",
     "http://localhost:5173",
-    "https://diagonistic-backend.vercel.app"
+    "https://diagonistic-backend.vercel.app",
+    "https://d1cf7go5y8guct.cloudfront.net"
 ];
 
 // Add this middleware to your server configuration
