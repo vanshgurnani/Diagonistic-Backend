@@ -182,13 +182,17 @@ module.exports.createIndex = async (fields, collectionName) => {
     }
 };
 
-module.exports.bulkWrite = async (bulkOperations, collectionName) => {
+module.exports.bulkWrite = async (
+    bulkOperations,
+    collectionName,
+    options = {}
+) => {
     try {
         const collectionModel = await databaseObject.getModel(collectionName);
         console.log(`[dbUtils-bulkWrite] Executing bulkWrite over ${collectionName}`);
 
         // Execute bulkWrite operation
-        const result = await collectionModel.bulkWrite(bulkOperations);
+        const result = await collectionModel.bulkWrite(bulkOperations, options);
 
         console.log(`[dbUtils-bulkWrite] bulkWrite result over ${collectionName} - \n${JSON.stringify(result)}`);
 

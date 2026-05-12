@@ -180,6 +180,7 @@ module.exports.deleteTest = async (req, res) => {
 
 module.exports.createBulkTests = async (req, res) => {
   try {
+    console.log("[createBulkTests] : upload bulk tests from sheet");
     // Extract email from the token
     const email = req.decodedToken.email;
     console.log(email);
@@ -217,16 +218,35 @@ module.exports.createBulkTests = async (req, res) => {
     }
 
     const worksheet = workbook.Sheets[firstSheetName];
-    testData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+    testData = XLSX.utils.sheet_to_json(worksheet, { defval: "" }).map((row) => {
+      const normalizedRow = {};
+      Object.entries(row).forEach(([key, value]) => {
+        const normalizedKey = typeof key === "string" ? key.trim() : key;
+        normalizedRow[normalizedKey] =
+          typeof value === "string" ? value.trim() : value;
+      });
+      return normalizedRow;
+    });
+
+    // Remove fully empty rows that are commonly present in uploaded sheets.
+    testData = testData.filter((row) =>
+      Object.values(row).some(
+        (value) => value !== "" && value !== null && value !== undefined
+      )
+    );
 
     testData = testData.map((row) => {
-      if (!row.discountPercentage) {
-        row.discountPercentage = 0;
+      const normalizedRow = { ...row };
+
+      if (!normalizedRow.discountPercentage) {
+        normalizedRow.discountPercentage = 0;
       }
-      if (!row.finalPrice) {
-        row.finalPrice = row.rate;
+
+      if (!normalizedRow.finalPrice) {
+        normalizedRow.finalPrice = normalizedRow.rate;
       }
-      return row;
+
+      return normalizedRow;
     });
 
     if (testData.length === 0) {
@@ -237,38 +257,63 @@ module.exports.createBulkTests = async (req, res) => {
     }
 
     try {
-      // Validate and prepare bulk operations
-      const bulkOperations = await Promise.all(
-        testData.map(async (data) => {
+      // Validate and prepare bulk operations with row-level error tracking.
+      const bulkOperations = [];
+      const rowErrors = [];
+
+      for (let index = 0; index < testData.length; index++) {
+        const data = testData[index];
+        try {
           const payload = await commonUtils.validateRequestBody(data, keys);
-          return {
+          bulkOperations.push({
             insertOne: {
               document: {
                 ...payload,
                 email: email,
               },
             },
-          };
-        })
-      );
+          });
+        } catch (error) {
+          rowErrors.push({
+            rowNumber: index + 2, // +2 for header row and 1-based indexing
+            message: error.message,
+          });
+        }
+      }
+
+      if (rowErrors.length > 0) {
+        return res.status(400).json({
+          type: "Error",
+          message: "Validation error in test data.",
+          details: rowErrors,
+        });
+      }
+
+      if (bulkOperations.length === 0) {
+        return res.status(400).json({
+          type: "Error",
+          message: "No valid rows found in uploaded file.",
+        });
+      }
 
       // Execute bulkWrite operation
       const result = await dbUtils.bulkWrite(
         bulkOperations,
-        DATABASE_COLLECTIONS.TEST
+        DATABASE_COLLECTIONS.TEST,
+        { ordered: false }
       );
 
       // Send success response
-      res.status(201).json({
+      return res.status(201).json({
         type: "Success",
-        message: `${result.insertedCount} test documents created successfully.`,
+        message: `${result.insertedCount || 0} test documents created successfully.`,
       });
     } catch (validationError) {
       // If validation error occurs while processing individual data
       console.error(
         `[createBulkTests] Data validation error: ${validationError}`
       );
-      res.status(400).json({
+      return res.status(400).json({
         type: "Error",
         message: "Validation error in test data.",
         details: validationError.message,
@@ -276,9 +321,11 @@ module.exports.createBulkTests = async (req, res) => {
     }
   } catch (error) {
     console.error(`[createBulkTests] Error occurred: ${error}`);
-    res
+    return res
       .status(500)
       .json({ type: "Error", message: "Failed to create bulk tests." });
+  } finally {
+    console.log("[createBulkTests] : execution finished");
   }
 };
 
