@@ -189,10 +189,10 @@ module.exports.createBulkTests = async (req, res) => {
     const keys = [
       { property: "TestName", optional: false },
       { property: "Category", optional: false },
-      { property: "rate", optional: false },
-      { property: "discountPercentage", optional: true },
-      { property: "available", optional: true },
-      { property: "finalPrice", optional: true },
+      { property: "Rate", optional: false },
+      { property: "Discount Percentage", optional: true },
+      { property: "Available", optional: true },
+      { property: "FinalPrice", optional: true },
     ];
 
     let testData = [];
