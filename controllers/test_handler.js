@@ -190,7 +190,7 @@ module.exports.createBulkTests = async (req, res) => {
       { property: "TestName", optional: false },
       { property: "Category", optional: false },
       { property: "Rate", optional: false },
-      { property: "Discount Percentage", optional: true },
+      { property: "DiscountPercentage", optional: true },
       { property: "Available", optional: true },
       { property: "FinalPrice", optional: true },
     ];
