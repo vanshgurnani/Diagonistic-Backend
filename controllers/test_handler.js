@@ -334,10 +334,10 @@ module.exports.getAllTest = async (req, res) => {
     // Extract filter, sort, limit, and page from the request query
     const filter = req?.query?.filter ? JSON.parse(req.query.filter) : {};
     const sort = req?.query?.sort ? JSON.parse(req.query.sort) : {};
-    const limit = req?.query?.limit ? parseInt(req.query.limit) : 100;
-    const page = req?.query?.page ? parseInt(req.query.page) : 1;
+    const limit = req?.query?.limit ?? parseInt(req.query.limit);
+    const page = req?.query?.page ?? parseInt(req.query.page);
     const skip = (page - 1) * limit;
-    const searchQuery = req.query.searchQuery ? req.query.searchQuery : "";
+    const searchQuery = req.query.searchQuery ?? req.query.searchQuery;
 
     // Define the pipeline to project necessary fields, apply sorting, pagination, and filtering
     const pipeline = [
